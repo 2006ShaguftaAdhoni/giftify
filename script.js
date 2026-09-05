@@ -25,3 +25,9 @@ function showCart() {
         cartDisplay.innerHTML += "<p>🎁 " + product + "</p>";
     });
 }
+let wishlist = [];
+
+function addToWishlist(product) {
+    wishlist.push(product);
+    alert(product + " added to wishlist! ❤️");
+}
