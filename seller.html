@@ -22,15 +22,15 @@
 
             <h3>Add a New Gift</h3>
 
-            <input type="text" placeholder="Gift name">
+            <input id="giftName" type="text" placeholder="Gift name">
 
-            <input type="number" placeholder="Price">
+<input id="giftPrice" type="number" placeholder="Price">
 
-            <input type="text" placeholder="Category">
+<input id="giftCategory" type="text" placeholder="Category">
 
-            <input type="text" placeholder="Description">
+<input id="giftDescription" type="text" placeholder="Description">
 
-            <button>Add Product 🎁</button>
+<button onclick="addProduct()">Add Product 🎁</button>
 
         </section>
 
@@ -38,11 +38,14 @@
 
             <h3>Your Products</h3>
 
-            <p>No products added yet.</p>
+            <div id="productList">
+    <p>No products added yet.</p>
+</div>
 
         </section>
 
     </main>
+    <script src="seller.js"></script>
 
 </body>
 </html>
