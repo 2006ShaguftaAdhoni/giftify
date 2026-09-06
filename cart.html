@@ -35,6 +35,15 @@
             `;
         });
     }
+    function removeFromCart(product) {
+    const index = cart.indexOf(product);
+
+    if (index !== -1) {
+        cart.splice(index, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        location.reload();
+    }
+    }
 </script>
 
 </body>
