@@ -14,10 +14,18 @@
 <main>
     <h2>My Cart 🛒</h2>
     <div id="cartDisplay"></div>
+<button onclick="checkout()">🛍️ Proceed to Checkout</button>
 
-<button onclick="checkout()">
-    🛍️ Proceed to Checkout
-</button>
+<div id="checkoutForm" style="display: none;">
+    <h2>Delivery Details</h2>
+
+    <input id="customerName" placeholder="Your name">
+    <input id="customerPhone" placeholder="Phone number">
+    <textarea id="customerAddress" placeholder="Delivery address"></textarea>
+
+    <button onclick="placeOrder()">Place Order 🎉</button>
+</div>
+
 </main>
 
 <script>
