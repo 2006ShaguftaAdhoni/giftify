@@ -60,3 +60,21 @@ function addToWishlist(product) {
         alert(product + " is already in your wishlist ❤️");
     }
 }
+const wishlistDisplay = document.getElementById("wishlistDisplay");
+
+if (wishlistDisplay) {
+    if (wishlist.length === 0) {
+        wishlistDisplay.innerHTML = "<p>Your wishlist is empty ❤️</p>";
+    } else {
+        wishlistDisplay.innerHTML = "<h2>My Wishlist ❤️</h2>";
+
+        wishlist.forEach((product) => {
+            wishlistDisplay.innerHTML += `
+                <article>
+                    <h3>🎁 ${product}</h3>
+                    <p>Saved in your wishlist ❤️</p>
+                </article>
+            `;
+        });
+    }
+}
