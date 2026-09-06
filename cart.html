@@ -62,8 +62,24 @@
         return;
     }
 
-    alert("Checkout feature coming soon! 🎉");
+    document.getElementById("checkoutForm").style.display = "block";
+}
+
+function placeOrder() {
+    const name = document.getElementById("customerName").value;
+    const phone = document.getElementById("customerPhone").value;
+    const address = document.getElementById("customerAddress").value;
+
+    if (!name || !phone || !address) {
+        alert("Please fill all details!");
+        return;
     }
+
+    alert("Order placed successfully! 🎉");
+
+    localStorage.removeItem("cart");
+    location.reload();
+}
 </script>
 
 </body>
