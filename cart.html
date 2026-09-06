@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Giftify - Cart</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Giftify 🎁</h1>
+    <p>Your shopping cart 🛒</p>
+</header>
+
+<main>
+    <h2>My Cart 🛒</h2>
+    <div id="cartDisplay"></div>
+</main>
+
+<script>
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartDisplay = document.getElementById("cartDisplay");
+
+    if (cart.length === 0) {
+        cartDisplay.innerHTML = "<p>Your cart is empty 🛒</p>";
+    } else {
+        cart.forEach((product) => {
+            cartDisplay.innerHTML += `
+                <article>
+                    <h3>🎁 ${product}</h3>
+                    <p>Added to your cart 🛒</p>
+                </article>
+            `;
+        });
+    }
+</script>
+
+</body>
+</html>
