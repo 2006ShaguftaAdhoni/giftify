@@ -161,3 +161,23 @@ nav button {
     border-radius: 10px;
     font-size: 16px;
 }
+#checkoutForm {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 12px;
+}
+
+#checkoutForm input,
+#checkoutForm textarea {
+    display: block;
+    width: 90%;
+    margin: 10px auto;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+#checkoutForm textarea {
+    height: 80px;
+}
