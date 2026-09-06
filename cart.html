@@ -26,9 +26,12 @@
         cart.forEach((product) => {
             cartDisplay.innerHTML += `
                 <article>
-                    <h3>🎁 ${product}</h3>
-                    <p>Added to your cart 🛒</p>
-                </article>
+    <h3>🎁 ${product}</h3>
+    <p>Added to your cart 🛒</p>
+    <button onclick="removeFromCart('${product}')">
+        🗑️ Remove
+    </button>
+</article>
             `;
         });
     }
