@@ -78,3 +78,22 @@ if (wishlistDisplay) {
         });
     }
 }
+function searchProducts() {
+    const searchText = document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+    const productCards = document.querySelectorAll("#productContainer article");
+
+    productCards.forEach((card) => {
+        const productName = card
+            .querySelector("h3")
+            .textContent
+            .toLowerCase();
+
+        card.style.display = productName.includes(searchText)
+            ? "block"
+            : "none";
+    });
+}
