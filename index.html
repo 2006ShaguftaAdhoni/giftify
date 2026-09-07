@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,79 +10,56 @@
 
 <body>
 
-    <header>
-        <h1>🎁 Giftify</h1>
-<p>Find the perfect gift for every special moment ✨</p>
-        <p>Find something special for someone special</p>
-    </header>
+<header>
+    <h1>🎁 Giftify</h1>
+    <p>Find the perfect gift for every special moment ✨</p>
+</header>
 
-    <main>
+<main>
 
-        <input
-    type="text"
-    id="searchInput"
-    placeholder="🔍 Search for gifts..."
-    onkeyup="searchProducts()"
->
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search for gifts..."
+        onkeyup="searchProducts()"
+    >
 
-        <h2>Categories</h2>
+    <h2>Categories</h2>
 
-        <div>
-            <button>🎂 Birthday</button>
-            <button>💕 Love</button>
-            <button>🎓 Graduation</button>
-            <button>🎉 Anniversary</button>
-            <button>👩 For Her</button>
-            <button>👨 For Him</button>
-        </div>
+    <div id="categoryButtons">
+        <button onclick="filterCategory('All')">All</button>
+        <button onclick="filterCategory('Birthday')">🎂 Birthday</button>
+        <button onclick="filterCategory('Love')">❤️ Love</button>
+        <button onclick="filterCategory('Graduation')">🎓 Graduation</button>
+        <button onclick="filterCategory('Anniversary')">💍 Anniversary</button>
+        <button onclick="filterCategory('For Her')">🌸 For Her</button>
+        <button onclick="filterCategory('For Him')">🎁 For Him</button>
+    </div>
 
-        <h2>Featured Gifts</h2>
-<div id="productContainer"></div>
-            
-    ❤️ Wishlist
-                </button>
-                <p>₹499</p>
-                <button>Add to Cart</button>
-            </article>
+    <h2>Featured Gifts</h2>
 
-            <article>
-                <div>🌸</div>
-                <h3><a href="product.html">Personalized Bouquet</a></h3>
-                <button onclick="addToWishlist('Personalized Bouquet')">
-    ❤️ Wishlist
-</button>
-                <p>₹699</p>
-                <button>Add to Cart</button>
-            </article>
+    <div id="productContainer"></div>
 
-            <article>
-                <div>🧸</div>
-                <h3><a href="product.html">Custom Teddy Gift</a></h3>
-                <button onclick="addToWishlist('Custom Teddy Gift')">
-    ❤️ Wishlist
-</button>
-                <p>₹599</p>
-                <button>Add to Cart</button>
-            </article>
-        </div>
+    <div id="cartDisplay"></div>
 
-    </main>
-    <div style="text-align: center; margin: 20px;">
+</main>
+
+<div style="text-align: center; margin: 20px;">
     <a href="seller.html">
         <button>🏪 Sell Your Gifts</button>
     </a>
-    </div>
+</div>
 
-    <nav>
-        <button>🏠 Home</button>
-        <button>🔍 Search</button>
-        <a href="wishlist.html">❤️ Wishlist</a>
-        <a href="cart.html">🛒 Cart</a>
-        <button>👤 Profile</button>
-        <a href="orders.html">📦 My Orders</a>
-    </nav>
- <script src="products.js"></script>
-<script src="script.js"></script>   <div id="cartDisplay"></div>
+<nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="index.html#searchInput">🔍 Search</a>
+    <a href="wishlist.html">❤️ Wishlist</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav>
+
+<script src="products.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
