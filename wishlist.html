@@ -1,39 +1,130 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Giftify - Wishlist</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
 
-<header>
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Giftify - Wishlist ❤️</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head><body><header>
     <h1>Giftify 🎁</h1>
     <p>Your saved gifts ❤️</p>
-</header>
+</header><main><h2>My Wishlist ❤️</h2>
 
-<main>
-    <h2>My Wishlist ❤️</h2>
-    <div id="wishlistDisplay"></div>
-</main>
+<div id="wishlistDisplay"></div>
 
-<script>
-    const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    const wishlistDisplay = document.getElementById("wishlistDisplay");
+</main><nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="index.html#searchInput">🔍 Search</a>
+    <a href="wishlist.html">❤️ Wishlist</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav><script>
+
+let wishlist =
+    JSON.parse(localStorage.getItem("wishlist")) || [];
+
+const wishlistDisplay =
+    document.getElementById("wishlistDisplay");
+
+
+function displayWishlist() {
+
+    wishlistDisplay.innerHTML = "";
+
 
     if (wishlist.length === 0) {
-        wishlistDisplay.innerHTML =
-            "<p>Your wishlist is empty ❤️</p>";
-    } else {
-        wishlist.forEach((product) => {
-            wishlistDisplay.innerHTML += `
-                <article>
-                    <h3>🎁 ${product}</h3>
-                    <p>Saved in your wishlist ❤️</p>
-                </article>
-            `;
-        });
-    }
-</script>
 
-</body>
+        wishlistDisplay.innerHTML = `
+            <h3>Your wishlist is empty ❤️</h3>
+
+            <p>
+                Save your favourite gifts here!
+            </p>
+
+            <a href="index.html">
+                <button>🎁 Browse Gifts</button>
+            </a>
+        `;
+
+        return;
+    }
+
+
+    wishlist.forEach((product, index) => {
+
+        wishlistDisplay.innerHTML += `
+
+            <article class="product-card">
+
+                <div class="product-image">
+                    ${product.emoji}
+                </div>
+
+                <h3>${product.name}</h3>
+
+                <p>
+                    <strong>Price:</strong>
+                    ₹${product.price}
+                </p>
+
+                <p>
+                    ${product.description}
+                </p>
+
+                <p>
+                    <strong>Category:</strong>
+                    ${product.category}
+                </p>
+
+                <button onclick="removeFromWishlist(${index})">
+                    🗑️ Remove
+                </button>
+
+                <button onclick="addWishlistItemToCart(${index})">
+                    🛒 Add to Cart
+                </button>
+
+            </article>
+
+        `;
+    });
+}
+
+
+// REMOVE FROM WISHLIST
+function removeFromWishlist(index) {
+
+    wishlist.splice(index, 1);
+
+    localStorage.setItem(
+        "wishlist",
+        JSON.stringify(wishlist)
+    );
+
+    displayWishlist();
+}
+
+
+// ADD WISHLIST ITEM TO CART
+function addWishlistItemToCart(index) {
+
+    const product = wishlist[index];
+
+    let cart =
+        JSON.parse(localStorage.getItem("cart")) || [];
+
+    cart.push(product);
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+    alert(product.name + " added to cart! 🛒");
+}
+
+
+displayWishlist();
+
+</script></body>
 </html>
