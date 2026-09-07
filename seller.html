@@ -9,45 +9,71 @@
 
 <body>
 
-    <header>
-        <h1>🏪 Giftify Seller</h1>
-        <p>Grow your gift business</p>
-    </header>
+<header>
+    <h1>🏪 Giftify Seller</h1>
+    <p>Add and manage your gifts</p>
+</header>
 
-    <main>
+<main>
 
-        <h2>Seller Dashboard</h2>
+    <section class="product-details">
 
-        <section class="product-details">
+        <h2>Add a New Gift</h2>
 
-            <h3>Add a New Gift</h3>
+        <input
+            id="giftName"
+            type="text"
+            placeholder="Gift name"
+        >
 
-            <input id="giftName" type="text" placeholder="Gift name">
+        <input
+            id="giftPrice"
+            type="number"
+            placeholder="Price"
+        >
 
-<input id="giftPrice" type="number" placeholder="Price">
+        <input
+            id="giftCategory"
+            type="text"
+            placeholder="Category"
+        >
 
-<input id="giftCategory" type="text" placeholder="Category">
+        <textarea
+            id="giftDescription"
+            placeholder="Description"
+        ></textarea>
 
-<input id="giftDescription" type="text" placeholder="Description">
+        <label for="giftImage">
+            Select Product Photo
+        </label>
 
-<button onclick="addProduct()">Add Product 🎁</button>
+        <input
+            id="giftImage"
+            type="file"
+            accept="image/*"
+        >
 
-        </section>
+        <button onclick="addProduct()">
+            Add Product 🎁
+        </button>
 
-        <section class="product-details">
+    </section>
 
-            <h3>Your Products</h3>
+    <section class="product-details">
 
-            <div id="productList">
-    <p>No products added yet.</p>
-</div>
+        <h2>Your Products</h2>
 
-        </section>
+        <div id="productList">
+            <p>Loading products...</p>
+        </div>
 
-    </main>
-    
+    </section>
+
+</main>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="seller.js"></script>
+
 </body>
 </html>
