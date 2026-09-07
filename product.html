@@ -1,52 +1,170 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gift Details - Giftify 🎁</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Gift Details - Giftify 🎁</title>
 
-<body>
+<link rel="stylesheet" href="style.css">
 
-    <header>
-        <h1>🎁 Giftify</h1>
-        <p>Find something special for someone special</p>
-    </header>
+</head><body><header>
+    <h1>🎁 Giftify</h1>
+    <p>Find something special for someone special</p>
+</header><main><button onclick="history.back()">← Back</button>
 
-    <main>
+<section
+    class="product-details"
+    id="productDetails"
+></section>
 
-        <button onclick="history.back()">← Back</button>
+</main><nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="index.html#searchInput">🔍 Search</a>
+    <a href="wishlist.html">❤️ Wishlist</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav><script src="products.js"></script><script>
 
-        <section class="product-details">
+const productId =
+    new URLSearchParams(window.location.search)
+    .get("id");
 
-            <div class="product-image">🎁</div>
 
-            <h2>Custom Gift Box</h2>
+const sellerProducts =
+    JSON.parse(
+        localStorage.getItem("sellerProducts")
+    ) || [];
 
-            <h3>₹499</h3>
 
-            <p>
-                Create a special gift box with personalized items
-                for your loved ones.
-            </p>
+const allProducts = [
+    ...products,
+    ...sellerProducts
+];
 
-            <h3>Choose your gift occasion</h3>
 
-            <select>
-                <option>Birthday</option>
-                <option>Anniversary</option>
-                <option>Graduation</option>
-                <option>Just Because</option>
-            </select>
+const product =
+    allProducts.find(
+        (item) =>
+            item.id == productId
+    );
 
-            <br><br>
 
-            <button>Add to Cart 🛒</button>
+const productDetails =
+    document.getElementById("productDetails");
 
-        </section>
 
-    </main>
+if (!product) {
 
-</body>
+    productDetails.innerHTML = `
+
+        <h2>Gift not found 😔</h2>
+
+        <p>
+            This gift could not be found.
+        </p>
+
+        <a href="index.html">
+            <button>🏠 Back to Gifts</button>
+        </a>
+
+    `;
+
+} else {
+
+    productDetails.innerHTML = `
+
+        <div class="product-image">
+            ${product.emoji}
+        </div>
+
+        <h2>${product.name}</h2>
+
+        <h3>₹${product.price}</h3>
+
+        <p>
+            ${product.description}
+        </p>
+
+        <p>
+            <strong>Category:</strong>
+            ${product.category}
+        </p>
+
+        <button onclick="addToCart()">
+            🛒 Add to Cart
+        </button>
+
+        <button onclick="addToWishlist()">
+            ❤️ Add to Wishlist
+        </button>
+
+    `;
+}
+
+
+// ADD TO CART
+function addToCart() {
+
+    let cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+
+    cart.push(product);
+
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+
+    alert(
+        product.name +
+        " added to cart! 🛒"
+    );
+}
+
+
+// ADD TO WISHLIST
+function addToWishlist() {
+
+    let wishlist =
+        JSON.parse(
+            localStorage.getItem("wishlist")
+        ) || [];
+
+
+    const exists =
+        wishlist.some(
+            (item) =>
+                item.name === product.name
+        );
+
+
+    if (exists) {
+
+        alert(
+            product.name +
+            " is already in your wishlist ❤️"
+        );
+
+        return;
+    }
+
+
+    wishlist.push(product);
+
+
+    localStorage.setItem(
+        "wishlist",
+        JSON.stringify(wishlist)
+    );
+
+
+    alert(
+        product.name +
+        " added to wishlist! ❤️"
+    );
+}
+
+</script></body>
 </html>
