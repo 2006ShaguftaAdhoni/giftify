@@ -3,6 +3,7 @@ let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
 const productContainer = document.getElementById("productContainer");
 
+// DISPLAY PRODUCTS
 function displayProducts(productList) {
     productContainer.innerHTML = "";
 
@@ -13,16 +14,23 @@ function displayProducts(productList) {
 
     productList.forEach((product) => {
         productContainer.innerHTML += `
-            <article>
-                <div class="product-image">${product.emoji}</div>
+            <article class="product-card">
+
+                <div class="product-image">
+                    ${product.emoji}
+                </div>
 
                 <h3>
-                    <a href="product.html">${product.name}</a>
+                    ${product.name}
                 </h3>
 
-                <p>₹${product.price}</p>
+                <p class="price">₹${product.price}</p>
+
                 <p>${product.description}</p>
-                <p><strong>Category:</strong> ${product.category}</p>
+
+                <p>
+                    <strong>Category:</strong> ${product.category}
+                </p>
 
                 <button onclick="addToCart('${product.name}')">
                     🛒 Add to Cart
@@ -31,51 +39,105 @@ function displayProducts(productList) {
                 <button onclick="addToWishlist('${product.name}')">
                     ❤️ Wishlist
                 </button>
+
             </article>
         `;
     });
 }
 
+// SHOW ALL PRODUCTS WHEN PAGE LOADS
 displayProducts(products);
 
-function addToCart(product) {
+
+// ADD TO CART
+function addToCart(productName) {
+
+    const product = products.find(
+        (item) => item.name === productName
+    );
+
+    if (!product) {
+        alert("Product not found!");
+        return;
+    }
+
     cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert(product + " added to cart! 🛒");
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+    alert(product.name + " added to cart! 🛒");
 }
 
-function addToWishlist(product) {
-    if (!wishlist.includes(product)) {
+
+// ADD TO WISHLIST
+function addToWishlist(productName) {
+
+    const product = products.find(
+        (item) => item.name === productName
+    );
+
+    if (!product) {
+        alert("Product not found!");
+        return;
+    }
+
+    const alreadyExists = wishlist.some(
+        (item) => item.name === productName
+    );
+
+    if (!alreadyExists) {
+
         wishlist.push(product);
-        localStorage.setItem("wishlist", JSON.stringify(wishlist));
-        alert(product + " added to wishlist! ❤️");
+
+        localStorage.setItem(
+            "wishlist",
+            JSON.stringify(wishlist)
+        );
+
+        alert(product.name + " added to wishlist! ❤️");
+
     } else {
-        alert(product + " is already in your wishlist ❤️");
+
+        alert(product.name + " is already in your wishlist ❤️");
+
     }
 }
 
+
+// SEARCH PRODUCTS
 function searchProducts() {
-    const searchText = document
-        .getElementById("searchInput")
-        .value
-        .toLowerCase();
+
+    const searchInput = document.getElementById("searchInput");
+
+    if (!searchInput) return;
+
+    const searchText = searchInput.value.toLowerCase().trim();
 
     const filteredProducts = products.filter((product) =>
         product.name.toLowerCase().includes(searchText) ||
-        product.category.toLowerCase().includes(searchText)
+        product.category.toLowerCase().includes(searchText) ||
+        product.description.toLowerCase().includes(searchText)
     );
 
     displayProducts(filteredProducts);
 }
 
+
+// FILTER BY CATEGORY
 function filterCategory(category) {
+
     if (category === "All") {
         displayProducts(products);
         return;
     }
 
-    const filteredProducts = products.filter((product) =>
-        product.category.toLowerCase() === category.toLowerCase()
+    const filteredProducts = products.filter(
+        (product) =>
+            product.category.toLowerCase() ===
+            category.toLowerCase()
     );
 
     displayProducts(filteredProducts);
