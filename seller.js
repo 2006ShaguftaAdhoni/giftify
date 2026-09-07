@@ -1,133 +1,225 @@
-let sellerProducts =
-JSON.parse(localStorage.getItem("sellerProducts")) || [];
 
-// ADD PRODUCT
-function addProduct() {
+// Giftify Seller Dashboard
+// Connected to Supabase
 
-const name =
-    document.getElementById("giftName").value.trim();
+let sellerProducts = [];
 
-const price =
-    document.getElementById("giftPrice").value;
+// Check if seller is logged in
+async function checkSellerLogin() {
 
-const category =
-    document.getElementById("giftCategory").value.trim();
+    const { data, error } =
+        await supabaseClient.auth.getUser();
 
-const description =
-    document.getElementById("giftDescription").value.trim();
+    if (error || !data.user) {
+        alert("Please login as a seller first.");
+        window.location.href = "seller-login.html";
+        return;
+    }
 
-
-if (!name || !price || !category || !description) {
-
-    alert("Please fill all fields!");
-
-    return;
+    loadSellerProducts(data.user.id);
 }
 
 
-const newProduct = {
+// Load products belonging to this seller
+async function loadSellerProducts(sellerId) {
 
-    id: Date.now(),
+    const { data, error } = await supabaseClient
+        .from("products")
+        .select("*")
+        .eq("seller_id", sellerId)
+        .order("created_at", { ascending: false });
 
-    name: name,
+    if (error) {
+        console.error(error);
+        alert("Could not load your products.");
+        return;
+    }
 
-    price: Number(price),
+    sellerProducts = data || [];
 
-    category: category,
-
-    emoji: "🎁",
-
-    description: description
-
-};
-
-
-sellerProducts.push(newProduct);
-
-
-localStorage.setItem(
-    "sellerProducts",
-    JSON.stringify(sellerProducts)
-);
-
-
-displaySellerProducts();
-
-
-document.getElementById("giftName").value = "";
-document.getElementById("giftPrice").value = "";
-document.getElementById("giftCategory").value = "";
-document.getElementById("giftDescription").value = "";
-
-
-alert("Product added successfully! 🎉");
-
+    displaySellerProducts();
 }
 
-// DISPLAY SELLER PRODUCTS
+
+// Add product
+async function addProduct() {
+
+    const name =
+        document.getElementById("giftName").value.trim();
+
+    const price =
+        document.getElementById("giftPrice").value;
+
+    const category =
+        document.getElementById("giftCategory").value.trim();
+
+    const description =
+        document.getElementById("giftDescription").value.trim();
+
+    if (!name || !price || !category || !description) {
+        alert("Please fill all fields!");
+        return;
+    }
+
+    const { data: userData } =
+        await supabaseClient.auth.getUser();
+
+    const user = userData.user;
+
+    if (!user) {
+        alert("Please login first.");
+        window.location.href = "seller-login.html";
+        return;
+    }
+
+    const newProduct = {
+
+        seller_id: user.id,
+
+        name: name,
+
+        price: Number(price),
+
+        category: category,
+
+        description: description,
+
+        image_url: null
+    };
+
+
+    const { error } =
+        await supabaseClient
+            .from("products")
+            .insert(newProduct);
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not add product: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert("Product added successfully! 🎉");
+
+
+    document.getElementById("giftName").value = "";
+
+    document.getElementById("giftPrice").value = "";
+
+    document.getElementById("giftCategory").value = "";
+
+    document.getElementById("giftDescription").value = "";
+
+
+    loadSellerProducts(user.id);
+}
+
+
+// Display seller products
 function displaySellerProducts() {
 
-const productList =
-    document.getElementById("productList");
+    const productList =
+        document.getElementById("productList");
+
+    if (!productList) return;
 
 
-if (sellerProducts.length === 0) {
+    if (sellerProducts.length === 0) {
 
-    productList.innerHTML =
-        "<p>No products added yet.</p>";
+        productList.innerHTML =
+            "<p>No products added yet.</p>";
 
-    return;
+        return;
+    }
+
+
+    productList.innerHTML = "";
+
+
+    sellerProducts.forEach((product) => {
+
+        productList.innerHTML += `
+
+            <article class="product-card">
+
+                <div class="product-image">
+                    🎁
+                </div>
+
+                <h3>
+                    ${product.name}
+                </h3>
+
+                <p>
+                    ₹${product.price}
+                </p>
+
+                <p>
+                    <strong>Category:</strong>
+                    ${product.category}
+                </p>
+
+                <p>
+                    ${product.description}
+                </p>
+
+                <button
+                    onclick="deleteProduct(${product.id})">
+                    🗑️ Delete
+                </button>
+
+            </article>
+
+        `;
+
+    });
 }
 
 
-productList.innerHTML = "";
+// Delete product
+async function deleteProduct(productId) {
+
+    const { error } =
+        await supabaseClient
+            .from("products")
+            .delete()
+            .eq("id", productId);
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not delete product: " +
+            error.message
+        );
+
+        return;
+    }
 
 
-sellerProducts.forEach((product, index) => {
+    alert("Product deleted.");
 
-    productList.innerHTML += `
 
-        <article class="product-card">
+    const { data: userData } =
+        await supabaseClient.auth.getUser();
 
-            <div class="product-image">
-                ${product.emoji}
-            </div>
+    if (userData.user) {
 
-            <h3>${product.name}</h3>
+        loadSellerProducts(
+            userData.user.id
+        );
 
-            <p>₹${product.price}</p>
-
-            <p>
-                <strong>Category:</strong>
-                ${product.category}
-            </p>
-
-            <p>${product.description}</p>
-
-            <button onclick="deleteProduct(${index})">
-                🗑️ Delete
-            </button>
-
-        </article>
-
-    `;
-});
-
+    }
 }
 
-// DELETE PRODUCT
-function deleteProduct(index) {
 
-sellerProducts.splice(index, 1);
-
-localStorage.setItem(
-    "sellerProducts",
-    JSON.stringify(sellerProducts)
-);
-
-displaySellerProducts();
-
-}
-
-// LOAD PRODUCTS
-displaySellerProducts();
+// Start seller dashboard
+checkSellerLogin();
