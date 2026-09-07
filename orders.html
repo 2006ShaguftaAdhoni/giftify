@@ -1,42 +1,118 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Giftify - My Orders</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Giftify - My Orders</title>
 
-<header>
+<link rel="stylesheet" href="style.css">
+
+</head><body><header>
     <h1>Giftify 🎁</h1>
     <p>My Orders 📦</p>
-</header>
+</header><main><h2>My Orders 📦</h2>
 
-<main>
-    <h2>My Orders 📦</h2>
-    <div id="ordersDisplay">
-        <div id="ordersDisplay"></div>
+<div id="ordersDisplay"></div>
 
-<script>
-const order = JSON.parse(localStorage.getItem("lastOrder"));
-const ordersDisplay = document.getElementById("ordersDisplay");
+</main><nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="index.html#searchInput">🔍 Search</a>
+    <a href="wishlist.html">❤️ Wishlist</a>
+    <a href="cart.html">🛒 Cart</a>
+    <a href="orders.html">📦 My Orders</a>
+</nav><script>
+
+const order = JSON.parse(
+    localStorage.getItem("lastOrder")
+);
+
+const ordersDisplay =
+    document.getElementById("ordersDisplay");
+
 
 if (order) {
-    ordersDisplay.innerHTML = `
-        <article>
-            <h3>📦 Order Confirmed</h3>
-            <p><strong>Name:</strong> ${order.name}</p>
-            <p><strong>Phone:</strong> ${order.phone}</p>
-            <p><strong>Address:</strong> ${order.address}</p>
-            <p><strong>Products:</strong> ${order.products.join(", ")}</p>
-            <p><strong>Date:</strong> ${order.date}</p>
-        </article>
-    `;
-} else {
-    ordersDisplay.innerHTML = "<p>No orders yet.</p>";
-}
-</script>
-    </div>
-</main>
 
-</body>
+    let productsHTML = "";
+
+    order.products.forEach((product) => {
+
+        productsHTML += `
+            <article class="product-card">
+
+                <div class="product-image">
+                    ${product.emoji}
+                </div>
+
+                <h3>${product.name}</h3>
+
+                <p>
+                    <strong>Price:</strong>
+                    ₹${product.price}
+                </p>
+
+                <p>${product.description}</p>
+
+                <p>
+                    <strong>Category:</strong>
+                    ${product.category}
+                </p>
+
+            </article>
+        `;
+    });
+
+
+    ordersDisplay.innerHTML = `
+
+        <article>
+
+            <h3>📦 Order Confirmed! 🎉</h3>
+
+            <p>
+                <strong>Name:</strong>
+                ${order.name}
+            </p>
+
+            <p>
+                <strong>Phone:</strong>
+                ${order.phone}
+            </p>
+
+            <p>
+                <strong>Delivery Address:</strong>
+                ${order.address}
+            </p>
+
+            <p>
+                <strong>Order Date:</strong>
+                ${order.date}
+            </p>
+
+            <h3>🎁 Products Ordered</h3>
+
+            ${productsHTML}
+
+            <h2>
+                💰 Total: ₹${order.total}
+            </h2>
+
+        </article>
+
+    `;
+
+} else {
+
+    ordersDisplay.innerHTML = `
+
+        <h3>No orders yet 📦</h3>
+
+        <p>
+            Your placed orders will appear here.
+        </p>
+
+        <a href="index.html">
+            <button>🎁 Browse Gifts</button>
+        </a>
+
+    `;
+}
+
+</script></body>
 </html>
