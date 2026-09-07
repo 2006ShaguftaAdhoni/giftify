@@ -39,7 +39,11 @@ productList.forEach((product) => {
                 ${product.emoji}
             </div>
 
-            <h3>${product.name}</h3>
+            <h3>
+    <a href="product.html?id=${product.id}">
+        ${product.name}
+    </a>
+</h3>
 
             <p class="price">
                 ₹${product.price}
