@@ -14,7 +14,27 @@
 <main>
     <h2>My Orders 📦</h2>
     <div id="ordersDisplay">
-        <p>No orders yet.</p>
+        <div id="ordersDisplay"></div>
+
+<script>
+const order = JSON.parse(localStorage.getItem("lastOrder"));
+const ordersDisplay = document.getElementById("ordersDisplay");
+
+if (order) {
+    ordersDisplay.innerHTML = `
+        <article>
+            <h3>📦 Order Confirmed</h3>
+            <p><strong>Name:</strong> ${order.name}</p>
+            <p><strong>Phone:</strong> ${order.phone}</p>
+            <p><strong>Address:</strong> ${order.address}</p>
+            <p><strong>Products:</strong> ${order.products.join(", ")}</p>
+            <p><strong>Date:</strong> ${order.date}</p>
+        </article>
+    `;
+} else {
+    ordersDisplay.innerHTML = "<p>No orders yet.</p>";
+}
+</script>
     </div>
 </main>
 
