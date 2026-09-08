@@ -50,7 +50,11 @@ function displayProducts(productList) {
                     class="product-image"
                 >
 
-                <h3>${product.emoji || "🎁"} ${product.name}</h3>
+                <h3>
+    <a href="product.html?id=${product.id}">
+        ${product.emoji || "🎁"} ${product.name}
+    </a>
+</h3>
 
                 <p class="price">₹${product.price}</p>
 
