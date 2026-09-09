@@ -97,8 +97,10 @@ function findProduct(uniqueId) {
 }
 
 // ADD TO CART
-function addToCart(uniqueId) {
-    const product = findProduct(uniqueId);
+function addToCartByName(productName) {
+    const product = allProducts.find(
+        (item) => item.name === productName
+    );
 
     if (!product) {
         alert("Product not found!");
@@ -110,7 +112,6 @@ function addToCart(uniqueId) {
 
     alert(product.name + " added to cart! 🛒");
 }
-
 // ADD TO WISHLIST
 function addToWishlist(uniqueId) {
     const product = findProduct(uniqueId);
