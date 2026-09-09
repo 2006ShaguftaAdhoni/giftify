@@ -1,4 +1,3 @@
-
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
@@ -9,37 +8,34 @@ const productContainer = document.getElementById("productContainer");
 const defaultImage =
     "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
-// LOAD PRODUCTS
+// Load products from Supabase
 async function loadProducts() {
     const { data: sellerProducts, error } = await supabaseClient
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
 
+    const defaultProducts = products.map((product) => ({
+        ...product,
+        uniqueId: "default-" + product.id
+    }));
+
+    const uploadedProducts = (sellerProducts || []).map((product) => ({
+        ...product,
+        uniqueId: "seller-" + product.id
+    }));
+
     if (error) {
-        console.error(error);
-        allProducts = products.map((product) => ({
-            ...product,
-            uniqueId: "default-" + product.id
-        }));
+        console.error("Supabase error:", error);
+        allProducts = defaultProducts;
     } else {
-        const defaultProducts = products.map((product) => ({
-            ...product,
-            uniqueId: "default-" + product.id
-        }));
-
-        const uploadedProducts = (sellerProducts || []).map((product) => ({
-            ...product,
-            uniqueId: "seller-" + product.id
-        }));
-
         allProducts = [...defaultProducts, ...uploadedProducts];
     }
 
     displayProducts(allProducts);
 }
 
-// DISPLAY PRODUCTS
+// Display products
 function displayProducts(productList) {
     if (!productContainer) return;
 
@@ -77,11 +73,15 @@ function displayProducts(productList) {
                 <p>
                     <strong>Category:</strong>
                     ${product.category}
-                <button onclick="addToCartByName('${product.name.replace(/'/g, "\\'")}')">
+                </p>
+
+                <button
+                    onclick="addToCart('${product.uniqueId}')">
                     🛒 Add to Cart
                 </button>
 
-                <button onclick="addToWishlist('${product.uniqueId}')">
+                <button
+                    onclick="addToWishlist('${product.uniqueId}')">
                     ❤️ Wishlist
                 </button>
             </article>
@@ -89,18 +89,16 @@ function displayProducts(productList) {
     });
 }
 
-// FIND PRODUCT USING UNIQUE ID
-function findProduct(uniqueId) {
+// Find the exact product
+function getProduct(uniqueId) {
     return allProducts.find(
         (product) => product.uniqueId === uniqueId
     );
 }
 
-// ADD TO CART
-function addToCartByName(productName) {
-    const product = allProducts.find(
-        (item) => item.name === productName
-    );
+// Add exact product to cart
+function addToCart(uniqueId) {
+    const product = getProduct(uniqueId);
 
     if (!product) {
         alert("Product not found!");
@@ -112,9 +110,10 @@ function addToCartByName(productName) {
 
     alert(product.name + " added to cart! 🛒");
 }
-// ADD TO WISHLIST
+
+// Add exact product to wishlist
 function addToWishlist(uniqueId) {
-    const product = findProduct(uniqueId);
+    const product = getProduct(uniqueId);
 
     if (!product) {
         alert("Product not found!");
@@ -128,20 +127,16 @@ function addToWishlist(uniqueId) {
     if (!alreadyExists) {
         wishlist.push(product);
         localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
         alert(product.name + " added to wishlist! ❤️");
     } else {
         alert(product.name + " is already in your wishlist ❤️");
     }
 }
 
-// SEARCH
+// Search
 function searchProducts() {
-    const searchInput = document.getElementById("searchInput");
-
-    if (!searchInput) return;
-
-    const searchText = searchInput.value.toLowerCase().trim();
+    const searchText =
+        document.getElementById("searchInput").value.toLowerCase().trim();
 
     const filteredProducts = allProducts.filter((product) =>
         product.name.toLowerCase().includes(searchText) ||
@@ -152,7 +147,7 @@ function searchProducts() {
     displayProducts(filteredProducts);
 }
 
-// CATEGORY FILTER
+// Category filter
 function filterCategory(category) {
     if (category === "All") {
         displayProducts(allProducts);
@@ -167,5 +162,5 @@ function filterCategory(category) {
     displayProducts(filteredProducts);
 }
 
-// START
+// Start
 loadProducts();
