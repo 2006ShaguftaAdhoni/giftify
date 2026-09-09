@@ -6,7 +6,10 @@ let allProducts = [];
 
 const productContainer = document.getElementById("productContainer");
 
-// LOAD PRODUCTS FROM SUPABASE
+const defaultImage =
+    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
+
+// LOAD PRODUCTS
 async function loadProducts() {
     const { data: sellerProducts, error } = await supabaseClient
         .from("products")
@@ -14,12 +17,23 @@ async function loadProducts() {
         .order("created_at", { ascending: false });
 
     if (error) {
-        console.error("Error loading seller products:", error);
-
-        // Show default products if Supabase fails
-        allProducts = [...products];
+        console.error(error);
+        allProducts = products.map((product) => ({
+            ...product,
+            uniqueId: "default-" + product.id
+        }));
     } else {
-        allProducts = [...products, ...(sellerProducts || [])];
+        const defaultProducts = products.map((product) => ({
+            ...product,
+            uniqueId: "default-" + product.id
+        }));
+
+        const uploadedProducts = (sellerProducts || []).map((product) => ({
+            ...product,
+            uniqueId: "seller-" + product.id
+        }));
+
+        allProducts = [...defaultProducts, ...uploadedProducts];
     }
 
     displayProducts(allProducts);
@@ -40,7 +54,7 @@ function displayProducts(productList) {
         const imageUrl =
             product.image_url ||
             product.image ||
-            "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
+            defaultImage;
 
         productContainer.innerHTML += `
             <article>
@@ -51,24 +65,25 @@ function displayProducts(productList) {
                 >
 
                 <h3>
-    <a href="product.html?id=${product.id}">
-        ${product.emoji || "🎁"} ${product.name}
-    </a>
-</h3>
+                    <a href="product.html?id=${product.uniqueId}">
+                        ${product.emoji || "🎁"} ${product.name}
+                    </a>
+                </h3>
 
                 <p class="price">₹${product.price}</p>
 
-                <p>${product.description}</p>
+                <p>${product.description || ""}</p>
 
                 <p>
-                    <strong>Category:</strong> ${product.category}
+                    <strong>Category:</strong>
+                    ${product.category}
                 </p>
 
-                <button onclick="addToCart(${product.id})">
+                <button onclick="addToCart('${product.uniqueId}')">
                     🛒 Add to Cart
                 </button>
 
-                <button onclick="addToWishlist(${product.id})">
+                <button onclick="addToWishlist('${product.uniqueId}')">
                     ❤️ Wishlist
                 </button>
             </article>
@@ -76,11 +91,16 @@ function displayProducts(productList) {
     });
 }
 
-// ADD PRODUCT TO CART
-function addToCart(productId) {
-    const product = allProducts.find(
-        (item) => String(item.id) === String(productId)
+// FIND PRODUCT USING UNIQUE ID
+function findProduct(uniqueId) {
+    return allProducts.find(
+        (product) => product.uniqueId === uniqueId
     );
+}
+
+// ADD TO CART
+function addToCart(uniqueId) {
+    const product = findProduct(uniqueId);
 
     if (!product) {
         alert("Product not found!");
@@ -93,11 +113,9 @@ function addToCart(productId) {
     alert(product.name + " added to cart! 🛒");
 }
 
-// ADD PRODUCT TO WISHLIST
-function addToWishlist(productId) {
-    const product = allProducts.find(
-        (item) => String(item.id) === String(productId)
-    );
+// ADD TO WISHLIST
+function addToWishlist(uniqueId) {
+    const product = findProduct(uniqueId);
 
     if (!product) {
         alert("Product not found!");
@@ -105,7 +123,7 @@ function addToWishlist(productId) {
     }
 
     const alreadyExists = wishlist.some(
-        (item) => String(item.id) === String(productId)
+        (item) => item.uniqueId === uniqueId
     );
 
     if (!alreadyExists) {
@@ -118,7 +136,7 @@ function addToWishlist(productId) {
     }
 }
 
-// SEARCH PRODUCTS
+// SEARCH
 function searchProducts() {
     const searchInput = document.getElementById("searchInput");
 
@@ -135,7 +153,7 @@ function searchProducts() {
     displayProducts(filteredProducts);
 }
 
-// FILTER BY CATEGORY
+// CATEGORY FILTER
 function filterCategory(category) {
     if (category === "All") {
         displayProducts(allProducts);
@@ -150,5 +168,5 @@ function filterCategory(category) {
     displayProducts(filteredProducts);
 }
 
-// START HOMEPAGE
+// START
 loadProducts();
