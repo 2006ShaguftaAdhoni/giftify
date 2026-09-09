@@ -26,13 +26,9 @@
     </button>
 
     <div id="checkoutForm" style="display: none;">
-
         <h2>Delivery Details</h2>
 
-        <input
-            id="customerName"
-            placeholder="Your name"
-        >
+        <input id="customerName" placeholder="Your name">
 
         <br><br>
 
@@ -54,7 +50,6 @@
         <button onclick="placeOrder()">
             Place Order 🎉
         </button>
-
     </div>
 </main>
 
@@ -65,6 +60,9 @@
     <a href="cart.html">🛒 Cart</a>
     <a href="orders.html">📦 My Orders</a>
 </nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 
 <script>
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -128,21 +126,17 @@ function displayCart() {
         `;
     });
 
-    cartTotal.innerHTML = `
-        <h2>Total: ₹${total}</h2>
-    `;
+    cartTotal.innerHTML = `<h2>Total: ₹${total}</h2>`;
 }
 
 // REMOVE PRODUCT
 function removeFromCart(index) {
     cart.splice(index, 1);
-
     localStorage.setItem("cart", JSON.stringify(cart));
-
     displayCart();
 }
 
-// CHECKOUT
+// SHOW CHECKOUT
 function checkout() {
     if (cart.length === 0) {
         alert("Your cart is empty 🛒");
@@ -152,8 +146,8 @@ function checkout() {
     document.getElementById("checkoutForm").style.display = "block";
 }
 
-// PLACE ORDER
-function placeOrder() {
+// PLACE ORDER IN SUPABASE
+async function placeOrder() {
     const name =
         document.getElementById("customerName").value.trim();
 
@@ -168,19 +162,82 @@ function placeOrder() {
         return;
     }
 
-    const order = {
+    if (cart.length === 0) {
+        alert("Your cart is empty 🛒");
+        return;
+    }
+
+    const total = cart.reduce(
+        (sum, product) => sum + Number(product.price || 0),
+        0
+    );
+
+    // Check whether customer is logged in
+    const { data: userData } =
+        await supabaseClient.auth.getUser();
+
+    const customerId = userData.user
+        ? userData.user.id
+        : null;
+
+    // Save order in Supabase
+    const { data: savedOrder, error: orderError } =
+        await supabaseClient
+            .from("orders")
+            .insert({
+                customer_id: customerId,
+                customer_name: name,
+                phone: phone,
+                address: address,
+                total: total,
+                status: "Pending"
+            })
+            .select()
+            .single();
+
+    if (orderError) {
+        console.error(orderError);
+        alert("Order saving failed: " + orderError.message);
+        return;
+    }
+
+    // Save each cart product in order_items
+    const orderItems = cart.map((product) => ({
+        order_id: savedOrder.id,
+        product_id: Number.isFinite(Number(product.id))
+            ? Number(product.id)
+            : null,
+        product_name: product.name,
+        price: Number(product.price || 0),
+        quantity: 1
+    }));
+
+    const { error: itemsError } =
+        await supabaseClient
+            .from("order_items")
+            .insert(orderItems);
+
+    if (itemsError) {
+        console.error(itemsError);
+        alert("Order items could not be saved: " + itemsError.message);
+        return;
+    }
+
+    // Keep local backup for the existing orders page
+    const localOrder = {
         name: name,
         phone: phone,
         address: address,
         products: cart,
-        total: cart.reduce(
-            (sum, product) => sum + Number(product.price || 0),
-            0
-        ),
-        date: new Date().toLocaleString()
+        total: total,
+        date: new Date().toLocaleString(),
+        supabaseOrderId: savedOrder.id
     };
 
-    localStorage.setItem("lastOrder", JSON.stringify(order));
+    localStorage.setItem(
+        "lastOrder",
+        JSON.stringify(localOrder)
+    );
 
     localStorage.removeItem("cart");
 
