@@ -1,66 +1,76 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Giftify - My Orders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giftify - My Orders</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 
-<link rel="stylesheet" href="style.css">
+<body>
 
-</head><body><header>
+<header>
     <h1>Giftify 🎁</h1>
     <p>My Orders 📦</p>
-</header><main><h2>My Orders 📦</h2>
+</header>
 
-<div id="ordersDisplay"></div>
+<main>
+    <h2>My Orders 📦</h2>
+    <div id="ordersDisplay"></div>
+</main>
 
-</main><nav>
+<nav>
     <a href="index.html">🏠 Home</a>
     <a href="index.html#searchInput">🔍 Search</a>
     <a href="wishlist.html">❤️ Wishlist</a>
     <a href="cart.html">🛒 Cart</a>
     <a href="orders.html">📦 My Orders</a>
-</nav><script>
+</nav>
 
-const order = JSON.parse(
-    localStorage.getItem("lastOrder")
-);
+<script>
+const order = JSON.parse(localStorage.getItem("lastOrder"));
+const ordersDisplay = document.getElementById("ordersDisplay");
 
-const ordersDisplay =
-    document.getElementById("ordersDisplay");
-
+const defaultImage =
+    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
 if (order) {
-
     let productsHTML = "";
 
     order.products.forEach((product) => {
+        const imageUrl =
+            product.image_url ||
+            product.image ||
+            defaultImage;
 
         productsHTML += `
             <article class="product-card">
 
-                <div class="product-image">
-                    ${product.emoji}
-                </div>
+                <img
+                    src="${imageUrl}"
+                    alt="${product.name}"
+                    class="product-image"
+                >
 
-                <h3>${product.name}</h3>
+                <h3>${product.emoji || "🎁"} ${product.name}</h3>
 
                 <p>
                     <strong>Price:</strong>
                     ₹${product.price}
                 </p>
 
-                <p>${product.description}</p>
+                <p>${product.description || ""}</p>
 
                 <p>
                     <strong>Category:</strong>
-                    ${product.category}
+                    ${product.category || "Gift"}
                 </p>
 
             </article>
         `;
     });
 
-
     ordersDisplay.innerHTML = `
-
         <article>
 
             <h3>📦 Order Confirmed! 🎉</h3>
@@ -89,30 +99,23 @@ if (order) {
 
             ${productsHTML}
 
-            <h2>
-                💰 Total: ₹${order.total}
-            </h2>
+            <h2>💰 Total: ₹${order.total}</h2>
 
         </article>
-
     `;
 
 } else {
-
     ordersDisplay.innerHTML = `
-
         <h3>No orders yet 📦</h3>
 
-        <p>
-            Your placed orders will appear here.
-        </p>
+        <p>Your placed orders will appear here.</p>
 
         <a href="index.html">
             <button>🎁 Browse Gifts</button>
         </a>
-
     `;
 }
+</script>
 
-</script></body>
+</body>
 </html>
