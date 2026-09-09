@@ -77,9 +77,7 @@ function displayProducts(productList) {
                 <p>
                     <strong>Category:</strong>
                     ${product.category}
-                </p>
-
-                <button onclick="addToCart('${product.uniqueId}')">
+                <button onclick="addToCartByName('${product.name.replace(/'/g, "\\'")}')">
                     🛒 Add to Cart
                 </button>
 
