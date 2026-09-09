@@ -1,76 +1,85 @@
 
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giftify - Cart 🛒</title>
     <link rel="stylesheet" href="style.css">
-</head><body><header>
+</head>
+
+<body>
+
+<header>
     <h1>Giftify 🎁</h1>
     <p>Your shopping cart 🛒</p>
-</header><main><h2>My Cart 🛒</h2>
+</header>
 
-<div id="cartDisplay"></div>
+<main>
+    <h2>My Cart 🛒</h2>
 
-<div id="cartTotal"></div>
+    <div id="cartDisplay"></div>
+    <div id="cartTotal"></div>
 
-<button onclick="checkout()">
-    🛍️ Proceed to Checkout
-</button>
-
-<div id="checkoutForm" style="display: none;">
-
-    <h2>Delivery Details</h2>
-
-    <input
-        id="customerName"
-        placeholder="Your name"
-    >
-
-    <br><br>
-
-    <input
-        id="customerPhone"
-        placeholder="Phone number"
-        type="tel"
-    >
-
-    <br><br>
-
-    <textarea
-        id="customerAddress"
-        placeholder="Delivery address"
-    ></textarea>
-
-    <br><br>
-
-    <button onclick="placeOrder()">
-        Place Order 🎉
+    <button onclick="checkout()">
+        🛍️ Proceed to Checkout
     </button>
 
-</div>
+    <div id="checkoutForm" style="display: none;">
 
-</main><nav>
+        <h2>Delivery Details</h2>
+
+        <input
+            id="customerName"
+            placeholder="Your name"
+        >
+
+        <br><br>
+
+        <input
+            id="customerPhone"
+            placeholder="Phone number"
+            type="tel"
+        >
+
+        <br><br>
+
+        <textarea
+            id="customerAddress"
+            placeholder="Delivery address"
+        ></textarea>
+
+        <br><br>
+
+        <button onclick="placeOrder()">
+            Place Order 🎉
+        </button>
+
+    </div>
+</main>
+
+<nav>
     <a href="index.html">🏠 Home</a>
     <a href="index.html#searchInput">🔍 Search</a>
     <a href="wishlist.html">❤️ Wishlist</a>
     <a href="cart.html">🛒 Cart</a>
     <a href="orders.html">📦 My Orders</a>
-</nav><script>
+</nav>
 
+<script>
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 const cartDisplay = document.getElementById("cartDisplay");
 const cartTotal = document.getElementById("cartTotal");
 
+const defaultImage =
+    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
 // DISPLAY CART
 function displayCart() {
-
     cartDisplay.innerHTML = "";
 
     if (cart.length === 0) {
-
         cartDisplay.innerHTML = `
             <h3>Your cart is empty 🛒</h3>
             <p>Go back to Giftify and choose a gift! 🎁</p>
@@ -83,25 +92,32 @@ function displayCart() {
     let total = 0;
 
     cart.forEach((product, index) => {
+        const price = Number(product.price) || 0;
+        total += price;
 
-        total += product.price;
+        const imageUrl =
+            product.image_url ||
+            product.image ||
+            defaultImage;
 
         cartDisplay.innerHTML += `
             <article class="product-card">
 
-                <div class="product-image">
-                    ${product.emoji}
-                </div>
+                <img
+                    src="${imageUrl}"
+                    alt="${product.name}"
+                    class="product-image"
+                >
 
-                <h3>${product.name}</h3>
+                <h3>${product.emoji || "🎁"} ${product.name}</h3>
 
-                <p>₹${product.price}</p>
+                <p class="price">₹${price}</p>
 
-                <p>${product.description}</p>
+                <p>${product.description || ""}</p>
 
                 <p>
                     <strong>Category:</strong>
-                    ${product.category}
+                    ${product.category || "Gift"}
                 </p>
 
                 <button onclick="removeFromCart(${index})">
@@ -117,24 +133,17 @@ function displayCart() {
     `;
 }
 
-
 // REMOVE PRODUCT
 function removeFromCart(index) {
-
     cart.splice(index, 1);
 
-    localStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
-    );
+    localStorage.setItem("cart", JSON.stringify(cart));
 
     displayCart();
 }
 
-
 // CHECKOUT
 function checkout() {
-
     if (cart.length === 0) {
         alert("Your cart is empty 🛒");
         return;
@@ -143,10 +152,8 @@ function checkout() {
     document.getElementById("checkoutForm").style.display = "block";
 }
 
-
 // PLACE ORDER
 function placeOrder() {
-
     const name =
         document.getElementById("customerName").value.trim();
 
@@ -156,42 +163,26 @@ function placeOrder() {
     const address =
         document.getElementById("customerAddress").value.trim();
 
-
     if (!name || !phone || !address) {
-
         alert("Please fill all delivery details!");
-
         return;
     }
 
-
     const order = {
-
         name: name,
-
         phone: phone,
-
         address: address,
-
         products: cart,
-
         total: cart.reduce(
-            (sum, product) => sum + product.price,
+            (sum, product) => sum + Number(product.price || 0),
             0
         ),
-
         date: new Date().toLocaleString()
     };
 
-
-    localStorage.setItem(
-        "lastOrder",
-        JSON.stringify(order)
-    );
-
+    localStorage.setItem("lastOrder", JSON.stringify(order));
 
     localStorage.removeItem("cart");
-
 
     alert(
         "Thank you, " +
@@ -199,13 +190,12 @@ function placeOrder() {
         "! Your order has been placed successfully! 🎉"
     );
 
-
     window.location.href = "orders.html";
 }
 
-
 // LOAD CART
 displayCart();
+</script>
 
-</script></body>
+</body>
 </html>
