@@ -1,6 +1,7 @@
 
 // Giftify Seller Dashboard
-// Product management + Incoming Orders
+// Product management + Incoming Orders + Order Status
+
 
 let sellerProducts = [];
 let sellerId = null;
@@ -16,14 +17,18 @@ async function checkSellerLogin() {
         await supabaseClient.auth.getUser();
 
     if (error || !data.user) {
+
         alert("Please login as a seller first.");
+
         window.location.href = "seller-login.html";
+
         return;
     }
 
     sellerId = data.user.id;
 
     await loadSellerProducts(sellerId);
+
     await loadIncomingOrders(sellerId);
 }
 
@@ -41,11 +46,19 @@ async function loadSellerProducts(sellerId) {
             .eq("seller_id", sellerId)
             .order("created_at", { ascending: false });
 
+
     if (error) {
+
         console.error(error);
-        alert("Could not load your products: " + error.message);
+
+        alert(
+            "Could not load your products: " +
+            error.message
+        );
+
         return;
     }
+
 
     sellerProducts = data || [];
 
@@ -78,16 +91,28 @@ async function addProduct() {
         imageInput ? imageInput.files[0] : null;
 
 
-    if (!name || !price || !category || !description || !imageFile) {
+    if (
+        !name ||
+        !price ||
+        !category ||
+        !description ||
+        !imageFile
+    ) {
 
-        alert("Please fill all fields and select a photo!");
+        alert(
+            "Please fill all fields and select a photo!"
+        );
+
         return;
     }
 
 
     if (imageFile.size > 5 * 1024 * 1024) {
 
-        alert("Please select an image smaller than 5 MB.");
+        alert(
+            "Please select an image smaller than 5 MB."
+        );
+
         return;
     }
 
@@ -99,7 +124,9 @@ async function addProduct() {
     if (userError || !userData.user) {
 
         alert("Please login first.");
+
         window.location.href = "seller-login.html";
+
         return;
     }
 
@@ -109,7 +136,8 @@ async function addProduct() {
 
     // Unique image filename
     const fileName =
-        user.id + "/" +
+        user.id +
+        "/" +
         Date.now() +
         "-" +
         imageFile.name;
@@ -126,7 +154,12 @@ async function addProduct() {
     if (uploadError) {
 
         console.error(uploadError);
-        alert("Photo upload failed: " + uploadError.message);
+
+        alert(
+            "Photo upload failed: " +
+            uploadError.message
+        );
+
         return;
     }
 
@@ -179,7 +212,9 @@ async function addProduct() {
     }
 
 
-    alert("Product and photo added successfully! 🎉");
+    alert(
+        "Product and photo added successfully! 🎉"
+    );
 
 
     // Clear form
@@ -187,6 +222,7 @@ async function addProduct() {
     document.getElementById("giftPrice").value = "";
     document.getElementById("giftCategory").value = "";
     document.getElementById("giftDescription").value = "";
+
     imageInput.value = "";
 
 
@@ -309,13 +345,19 @@ async function deleteProduct(productId) {
 
     if (userData.user) {
 
-        await loadSellerProducts(userData.user.id);
+        await loadSellerProducts(
+            userData.user.id
+        );
+
+        await loadIncomingOrders(
+            userData.user.id
+        );
     }
 }
 
 
 // ==================================================
-// INCOMING ORDERS
+// LOAD INCOMING ORDERS
 // ==================================================
 
 async function loadIncomingOrders(sellerId) {
@@ -331,7 +373,7 @@ async function loadIncomingOrders(sellerId) {
         "<p>Loading orders...</p>";
 
 
-    // Get this seller's products
+    // Get seller products
     const { data: productsData, error: productsError } =
         await supabaseClient
             .from("products")
@@ -350,7 +392,10 @@ async function loadIncomingOrders(sellerId) {
     }
 
 
-    if (!productsData || productsData.length === 0) {
+    if (
+        !productsData ||
+        productsData.length === 0
+    ) {
 
         ordersContainer.innerHTML =
             "<p>No products yet, so there are no incoming orders.</p>";
@@ -363,8 +408,11 @@ async function loadIncomingOrders(sellerId) {
         productsData.map(product => product.id);
 
 
-    // Get order items belonging to this seller
-    const { data: orderItems, error: itemsError } =
+    // Get orders containing seller products
+    const {
+        data: orderItems,
+        error: itemsError
+    } =
         await supabaseClient
             .from("order_items")
             .select("*")
@@ -385,7 +433,10 @@ async function loadIncomingOrders(sellerId) {
     }
 
 
-    if (!orderItems || orderItems.length === 0) {
+    if (
+        !orderItems ||
+        orderItems.length === 0
+    ) {
 
         ordersContainer.innerHTML =
             "<p>No incoming orders yet 📦</p>";
@@ -396,18 +447,27 @@ async function loadIncomingOrders(sellerId) {
 
     // Get unique order IDs
     const orderIds =
-        [...new Set(
-            orderItems.map(item => item.order_id)
-        )];
+        [
+            ...new Set(
+                orderItems.map(
+                    item => item.order_id
+                )
+            )
+        ];
 
 
     // Get customer/order information
-    const { data: orders, error: ordersError } =
+    const {
+        data: orders,
+        error: ordersError
+    } =
         await supabaseClient
             .from("orders")
             .select("*")
             .in("id", orderIds)
-            .order("created_at", { ascending: false });
+            .order("created_at", {
+                ascending: false
+            });
 
 
     if (ordersError) {
@@ -430,7 +490,8 @@ async function loadIncomingOrders(sellerId) {
 
         const itemsForOrder =
             orderItems.filter(
-                item => item.order_id === order.id
+                item =>
+                    item.order_id === order.id
             );
 
 
@@ -497,14 +558,119 @@ async function loadIncomingOrders(sellerId) {
                 </p>
 
                 <p>
-                    <strong>Status:</strong>
+                    <strong>Current Status:</strong>
                     ${order.status || "Pending"}
                 </p>
+
+
+                <!-- STATUS SELECTOR -->
+
+                <label>
+                    <strong>
+                        Update Order Status:
+                    </strong>
+                </label>
+
+                <select id="status-${order.id}">
+
+                    <option value="Pending"
+                        ${order.status === "Pending" ? "selected" : ""}>
+                        Pending
+                    </option>
+
+                    <option value="Confirmed"
+                        ${order.status === "Confirmed" ? "selected" : ""}>
+                        Confirmed
+                    </option>
+
+                    <option value="Preparing"
+                        ${order.status === "Preparing" ? "selected" : ""}>
+                        Preparing
+                    </option>
+
+                    <option value="Out for Delivery"
+                        ${order.status === "Out for Delivery" ? "selected" : ""}>
+                        Out for Delivery
+                    </option>
+
+                    <option value="Delivered"
+                        ${order.status === "Delivered" ? "selected" : ""}>
+                        Delivered
+                    </option>
+
+                </select>
+
+
+                <button
+                    onclick="updateOrderStatus(${order.id})">
+
+                    ✅ Update Status
+
+                </button>
 
             </article>
 
         `;
     });
+}
+
+
+// ==================================================
+// UPDATE ORDER STATUS
+// ==================================================
+
+async function updateOrderStatus(orderId) {
+
+    const select =
+        document.getElementById(
+            "status-" + orderId
+        );
+
+
+    if (!select) {
+
+        alert("Status selector not found.");
+
+        return;
+    }
+
+
+    const newStatus =
+        select.value;
+
+
+    const { error } =
+        await supabaseClient
+            .from("orders")
+            .update({
+                status: newStatus
+            })
+            .eq("id", orderId);
+
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not update order status: " +
+            error.message
+        );
+
+        return;
+    }
+
+
+    alert(
+        "Order #" +
+        orderId +
+        " status updated to " +
+        newStatus +
+        " ✅"
+    );
+
+
+    await loadIncomingOrders(sellerId);
 }
 
 
