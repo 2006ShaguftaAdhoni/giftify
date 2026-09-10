@@ -5,7 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Giftify - My Orders</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -17,12 +19,15 @@
 </header>
 
 <main>
+
     <h2>My Orders 📦</h2>
 
     <div id="ordersDisplay">
         <p>Loading your orders... ⏳</p>
     </div>
+
 </main>
+
 
 <nav>
     <a href="index.html">🏠 Home</a>
@@ -45,16 +50,51 @@ const defaultImage =
     "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
 
+// -----------------------------
+// GET STATUS MESSAGE
+// -----------------------------
+
+function getStatusMessage(status) {
+
+    switch (status) {
+
+        case "Pending":
+            return "⏳ Waiting for seller confirmation";
+
+        case "Confirmed":
+            return "✅ Order confirmed by seller";
+
+        case "Preparing":
+            return "🎁 Your gift is being prepared";
+
+        case "Out for Delivery":
+            return "🚚 Your gift is on the way";
+
+        case "Delivered":
+            return "🎉 Order delivered successfully";
+
+        default:
+            return "⏳ Order received";
+    }
+}
+
+
+// -----------------------------
+// LOAD ORDERS
+// -----------------------------
+
 async function loadOrders() {
 
     // Check login
     const { data: userData, error: userError } =
         await supabaseClient.auth.getUser();
 
+
     if (userError || !userData.user) {
 
         ordersDisplay.innerHTML = `
             <h3>Please login to see your orders 🔐</h3>
+
             <a href="seller-login.html">
                 <button>Login</button>
             </a>
@@ -62,6 +102,7 @@ async function loadOrders() {
 
         return;
     }
+
 
     const user = userData.user;
 
@@ -88,6 +129,7 @@ async function loadOrders() {
     }
 
 
+    // No orders
     if (!orders || orders.length === 0) {
 
         ordersDisplay.innerHTML = `
@@ -109,10 +151,14 @@ async function loadOrders() {
     let allOrdersHTML = "";
 
 
-    // Display every order
+    // -----------------------------
+    // DISPLAY EVERY ORDER
+    // -----------------------------
+
     for (const order of orders) {
 
-        // Get products inside this order
+
+        // Get order items
         const { data: items, error: itemsError } =
             await supabaseClient
                 .from("order_items")
@@ -121,7 +167,9 @@ async function loadOrders() {
 
 
         if (itemsError) {
+
             console.error(itemsError);
+
             continue;
         }
 
@@ -129,10 +177,16 @@ async function loadOrders() {
         let productsHTML = "";
 
 
+        // -----------------------------
+        // DISPLAY PRODUCTS
+        // -----------------------------
+
         for (const item of (items || [])) {
 
             let imageUrl = defaultImage;
+
             let description = "";
+
             let category = "Gift";
 
 
@@ -142,9 +196,12 @@ async function loadOrders() {
                 const { data: product } =
                     await supabaseClient
                         .from("products")
-                        .select("image_url, description, category")
+                        .select(
+                            "image_url, description, category"
+                        )
                         .eq("id", item.product_id)
                         .maybeSingle();
+
 
                 if (product) {
 
@@ -162,6 +219,7 @@ async function loadOrders() {
 
 
             productsHTML += `
+
                 <article class="product-card">
 
                     <img
@@ -198,45 +256,86 @@ async function loadOrders() {
         }
 
 
+        // Order date
         const orderDate =
             new Date(order.created_at).toLocaleString();
 
 
+        // Current status
+        const currentStatus =
+            order.status || "Pending";
+
+
+        const statusMessage =
+            getStatusMessage(currentStatus);
+
+
+        // -----------------------------
+        // ORDER CARD
+        // -----------------------------
+
         allOrdersHTML += `
+
             <article>
 
                 <h3>
-                    📦 Order #${order.id} - Confirmed! 🎉
+                    📦 Order #${order.id}
                 </h3>
+
+
+                <div style="
+                    padding:15px;
+                    margin:15px 0;
+                    border-radius:10px;
+                    background:#f5f0ff;
+                ">
+
+                    <h3>
+                        📍 Order Status
+                    </h3>
+
+                    <h2>
+                        ${currentStatus}
+                    </h2>
+
+                    <p>
+                        ${statusMessage}
+                    </p>
+
+                </div>
+
 
                 <p>
                     <strong>Name:</strong>
                     ${order.customer_name}
                 </p>
 
+
                 <p>
                     <strong>Phone:</strong>
                     ${order.phone}
                 </p>
+
 
                 <p>
                     <strong>Delivery Address:</strong>
                     ${order.address}
                 </p>
 
+
                 <p>
                     <strong>Order Date:</strong>
                     ${orderDate}
                 </p>
 
-                <p>
-                    <strong>Status:</strong>
-                    ${order.status || "Pending"}
-                </p>
 
-                <h3>🎁 Products Ordered</h3>
+                <h3>
+                    🎁 Products Ordered
+                </h3>
+
 
                 ${productsHTML}
+
 
                 <h2>
                     💰 Total: ₹${order.total}
@@ -253,6 +352,7 @@ async function loadOrders() {
 }
 
 
+// Start
 loadOrders();
 
 </script>
