@@ -1,5 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +18,10 @@
 
 <main>
     <h2>My Orders 📦</h2>
-    <div id="ordersDisplay"></div>
+
+    <div id="ordersDisplay">
+        <p>Loading your orders... ⏳</p>
+    </div>
 </main>
 
 <nav>
@@ -27,94 +32,229 @@
     <a href="orders.html">📦 My Orders</a>
 </nav>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+
 <script>
-const order = JSON.parse(localStorage.getItem("lastOrder"));
-const ordersDisplay = document.getElementById("ordersDisplay");
+
+const ordersDisplay =
+    document.getElementById("ordersDisplay");
 
 const defaultImage =
     "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
-if (order) {
-    let productsHTML = "";
 
-    order.products.forEach((product) => {
-        const imageUrl =
-            product.image_url ||
-            product.image ||
-            defaultImage;
+async function loadOrders() {
 
-        productsHTML += `
-            <article class="product-card">
+    // Check login
+    const { data: userData, error: userError } =
+        await supabaseClient.auth.getUser();
 
-                <img
-                    src="${imageUrl}"
-                    alt="${product.name}"
-                    class="product-image"
-                >
+    if (userError || !userData.user) {
 
-                <h3>${product.emoji || "🎁"} ${product.name}</h3>
+        ordersDisplay.innerHTML = `
+            <h3>Please login to see your orders 🔐</h3>
+            <a href="seller-login.html">
+                <button>Login</button>
+            </a>
+        `;
+
+        return;
+    }
+
+    const user = userData.user;
+
+
+    // Get customer's orders
+    const { data: orders, error: ordersError } =
+        await supabaseClient
+            .from("orders")
+            .select("*")
+            .eq("customer_id", user.id)
+            .order("created_at", { ascending: false });
+
+
+    if (ordersError) {
+
+        console.error(ordersError);
+
+        ordersDisplay.innerHTML = `
+            <p>Could not load orders.</p>
+            <p>${ordersError.message}</p>
+        `;
+
+        return;
+    }
+
+
+    if (!orders || orders.length === 0) {
+
+        ordersDisplay.innerHTML = `
+            <h3>No orders yet 📦</h3>
+
+            <p>
+                Your placed orders will appear here.
+            </p>
+
+            <a href="index.html">
+                <button>🎁 Browse Gifts</button>
+            </a>
+        `;
+
+        return;
+    }
+
+
+    let allOrdersHTML = "";
+
+
+    // Display every order
+    for (const order of orders) {
+
+        // Get products inside this order
+        const { data: items, error: itemsError } =
+            await supabaseClient
+                .from("order_items")
+                .select("*")
+                .eq("order_id", order.id);
+
+
+        if (itemsError) {
+            console.error(itemsError);
+            continue;
+        }
+
+
+        let productsHTML = "";
+
+
+        for (const item of (items || [])) {
+
+            let imageUrl = defaultImage;
+            let description = "";
+            let category = "Gift";
+
+
+            // Get product information
+            if (item.product_id) {
+
+                const { data: product } =
+                    await supabaseClient
+                        .from("products")
+                        .select("image_url, description, category")
+                        .eq("id", item.product_id)
+                        .maybeSingle();
+
+                if (product) {
+
+                    imageUrl =
+                        product.image_url ||
+                        defaultImage;
+
+                    description =
+                        product.description || "";
+
+                    category =
+                        product.category || "Gift";
+                }
+            }
+
+
+            productsHTML += `
+                <article class="product-card">
+
+                    <img
+                        src="${imageUrl}"
+                        alt="${item.product_name}"
+                        class="product-image"
+                    >
+
+                    <h3>
+                        🎁 ${item.product_name}
+                    </h3>
+
+                    <p>
+                        <strong>Price:</strong>
+                        ₹${item.price}
+                    </p>
+
+                    <p>
+                        ${description}
+                    </p>
+
+                    <p>
+                        <strong>Category:</strong>
+                        ${category}
+                    </p>
+
+                    <p>
+                        <strong>Quantity:</strong>
+                        ${item.quantity || 1}
+                    </p>
+
+                </article>
+            `;
+        }
+
+
+        const orderDate =
+            new Date(order.created_at).toLocaleString();
+
+
+        allOrdersHTML += `
+            <article>
+
+                <h3>
+                    📦 Order #${order.id} - Confirmed! 🎉
+                </h3>
 
                 <p>
-                    <strong>Price:</strong>
-                    ₹${product.price}
+                    <strong>Name:</strong>
+                    ${order.customer_name}
                 </p>
-
-                <p>${product.description || ""}</p>
 
                 <p>
-                    <strong>Category:</strong>
-                    ${product.category || "Gift"}
+                    <strong>Phone:</strong>
+                    ${order.phone}
                 </p>
+
+                <p>
+                    <strong>Delivery Address:</strong>
+                    ${order.address}
+                </p>
+
+                <p>
+                    <strong>Order Date:</strong>
+                    ${orderDate}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    ${order.status || "Pending"}
+                </p>
+
+                <h3>🎁 Products Ordered</h3>
+
+                ${productsHTML}
+
+                <h2>
+                    💰 Total: ₹${order.total}
+                </h2>
 
             </article>
+
+            <hr>
         `;
-    });
+    }
 
-    ordersDisplay.innerHTML = `
-        <article>
 
-            <h3>📦 Order Confirmed! 🎉</h3>
-
-            <p>
-                <strong>Name:</strong>
-                ${order.name}
-            </p>
-
-            <p>
-                <strong>Phone:</strong>
-                ${order.phone}
-            </p>
-
-            <p>
-                <strong>Delivery Address:</strong>
-                ${order.address}
-            </p>
-
-            <p>
-                <strong>Order Date:</strong>
-                ${order.date}
-            </p>
-
-            <h3>🎁 Products Ordered</h3>
-
-            ${productsHTML}
-
-            <h2>💰 Total: ₹${order.total}</h2>
-
-        </article>
-    `;
-
-} else {
-    ordersDisplay.innerHTML = `
-        <h3>No orders yet 📦</h3>
-
-        <p>Your placed orders will appear here.</p>
-
-        <a href="index.html">
-            <button>🎁 Browse Gifts</button>
-        </a>
-    `;
+    ordersDisplay.innerHTML = allOrdersHTML;
 }
+
+
+loadOrders();
+
 </script>
 
 </body>
