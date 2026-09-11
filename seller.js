@@ -78,12 +78,10 @@ async function addProduct() {
     const price =
         document.getElementById("giftPrice").value;
 
-    const category =
-        document.getElementById("giftCategory").value.trim();
-
-    const description =
-        document.getElementById("giftDescription").value.trim();
-
+    
+const category = document.getElementById("giftCategory").value.trim();
+const sellerLocation = document.getElementById("sellerLocation").value.trim();
+const description = document.getElementById("giftDescription").value.trim();
     const imageInput =
         document.getElementById("giftImage");
 
@@ -91,13 +89,7 @@ async function addProduct() {
         imageInput ? imageInput.files[0] : null;
 
 
-    if (
-        !name ||
-        !price ||
-        !category ||
-        !description ||
-        !imageFile
-    ) {
+if (!name || !price || !category || !sellerLocation || !description || !imageFile) { {
 
         alert(
             "Please fill all fields and select a photo!"
@@ -186,6 +178,8 @@ async function addProduct() {
         price: Number(price),
 
         category: category,
+        
+        seller_location: sellerLocation,
 
         description: description,
 
@@ -221,6 +215,7 @@ async function addProduct() {
     document.getElementById("giftName").value = "";
     document.getElementById("giftPrice").value = "";
     document.getElementById("giftCategory").value = "";
+    document.getElementById("sellerLocation").value = "";
     document.getElementById("giftDescription").value = "";
 
     imageInput.value = "";
