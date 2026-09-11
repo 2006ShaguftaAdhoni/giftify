@@ -1,7 +1,6 @@
 
 // Giftify Seller Dashboard
-// Product management + Incoming Orders + Order Status
-
+// Product management + Incoming Orders + Order Status + Seller Location
 
 let sellerProducts = [];
 let sellerId = null;
@@ -46,7 +45,6 @@ async function loadSellerProducts(sellerId) {
             .eq("seller_id", sellerId)
             .order("created_at", { ascending: false });
 
-
     if (error) {
 
         console.error(error);
@@ -59,7 +57,6 @@ async function loadSellerProducts(sellerId) {
         return;
     }
 
-
     sellerProducts = data || [];
 
     displaySellerProducts();
@@ -67,7 +64,7 @@ async function loadSellerProducts(sellerId) {
 
 
 // ===============================
-// ADD PRODUCT WITH PHOTO
+// ADD PRODUCT WITH PHOTO + LOCATION
 // ===============================
 
 async function addProduct() {
@@ -78,10 +75,15 @@ async function addProduct() {
     const price =
         document.getElementById("giftPrice").value;
 
-    
-const category = document.getElementById("giftCategory").value.trim();
-const sellerLocation = document.getElementById("sellerLocation").value.trim();
-const description = document.getElementById("giftDescription").value.trim();
+    const category =
+        document.getElementById("giftCategory").value.trim();
+
+    const sellerLocation =
+        document.getElementById("sellerLocation").value.trim();
+
+    const description =
+        document.getElementById("giftDescription").value.trim();
+
     const imageInput =
         document.getElementById("giftImage");
 
@@ -89,7 +91,15 @@ const description = document.getElementById("giftDescription").value.trim();
         imageInput ? imageInput.files[0] : null;
 
 
-if (!name || !price || !category || !sellerLocation || !description || !imageFile) { {
+    // Check fields
+    if (
+        !name ||
+        !price ||
+        !category ||
+        !sellerLocation ||
+        !description ||
+        !imageFile
+    ) {
 
         alert(
             "Please fill all fields and select a photo!"
@@ -99,6 +109,7 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
     }
 
 
+    // Check image size
     if (imageFile.size > 5 * 1024 * 1024) {
 
         alert(
@@ -109,6 +120,7 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
     }
 
 
+    // Check login
     const { data: userData, error: userError } =
         await supabaseClient.auth.getUser();
 
@@ -140,7 +152,10 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
         await supabaseClient
             .storage
             .from("product-images")
-            .upload(fileName, imageFile);
+            .upload(
+                fileName,
+                imageFile
+            );
 
 
     if (uploadError) {
@@ -168,7 +183,7 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
         imageData.publicUrl;
 
 
-    // Save product
+    // Product data
     const newProduct = {
 
         seller_id: user.id,
@@ -178,7 +193,7 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
         price: Number(price),
 
         category: category,
-        
+
         seller_location: sellerLocation,
 
         description: description,
@@ -187,6 +202,7 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
     };
 
 
+    // Save product
     const { error: productError } =
         await supabaseClient
             .from("products")
@@ -213,14 +229,19 @@ if (!name || !price || !category || !sellerLocation || !description || !imageFil
 
     // Clear form
     document.getElementById("giftName").value = "";
+
     document.getElementById("giftPrice").value = "";
+
     document.getElementById("giftCategory").value = "";
+
     document.getElementById("sellerLocation").value = "";
+
     document.getElementById("giftDescription").value = "";
 
     imageInput.value = "";
 
 
+    // Reload products
     await loadSellerProducts(user.id);
 }
 
@@ -233,7 +254,6 @@ function displaySellerProducts() {
 
     const productList =
         document.getElementById("productList");
-
 
     if (!productList) return;
 
@@ -287,6 +307,11 @@ function displaySellerProducts() {
                 <p>
                     <strong>Category:</strong>
                     ${product.category}
+                </p>
+
+                <p>
+                    <strong>Location:</strong>
+                    ${product.seller_location || "Not provided"}
                 </p>
 
                 <p>
@@ -369,7 +394,10 @@ async function loadIncomingOrders(sellerId) {
 
 
     // Get seller products
-    const { data: productsData, error: productsError } =
+    const {
+        data: productsData,
+        error: productsError
+    } =
         await supabaseClient
             .from("products")
             .select("id, name")
@@ -400,7 +428,9 @@ async function loadIncomingOrders(sellerId) {
 
 
     const productIds =
-        productsData.map(product => product.id);
+        productsData.map(
+            product => product.id
+        );
 
 
     // Get orders containing seller products
@@ -412,7 +442,9 @@ async function loadIncomingOrders(sellerId) {
             .from("order_items")
             .select("*")
             .in("product_id", productIds)
-            .order("id", { ascending: false });
+            .order("id", {
+                ascending: false
+            });
 
 
     if (itemsError) {
@@ -558,13 +590,12 @@ async function loadIncomingOrders(sellerId) {
                 </p>
 
 
-                <!-- STATUS SELECTOR -->
-
                 <label>
                     <strong>
                         Update Order Status:
                     </strong>
                 </label>
+
 
                 <select id="status-${order.id}">
 
