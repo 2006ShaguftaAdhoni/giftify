@@ -74,6 +74,10 @@ function displayProducts(productList) {
                     <strong>Category:</strong>
                     ${product.category}
                 </p>
+                <p>
+    📍 <strong>Seller Location:</strong>
+    ${product.seller_location || "Location not provided"}
+</p>
 
                 <button
                     onclick="addToCart('${product.uniqueId}')">
