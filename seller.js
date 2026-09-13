@@ -68,6 +68,8 @@ async function loadSellerProducts(sellerId) {
 // ===============================
 
 async function addProduct() {
+    const businessName =
+    document.getElementById("businessName").value.trim();
 
     const name =
         document.getElementById("giftName").value.trim();
@@ -93,6 +95,7 @@ async function addProduct() {
 
     // Check fields
     if (
+        !businessName||
         !name ||
         !price ||
         !category ||
