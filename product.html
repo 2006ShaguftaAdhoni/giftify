@@ -1,170 +1,347 @@
-<!DOCTYPE html><html lang="en"><head>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Gift Details - Giftify 🎁</title>
 
-<link rel="stylesheet" href="style.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-</head><body><header>
+    <title>Gift Details - Giftify 🎁</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<header>
+
     <h1>🎁 Giftify</h1>
-    <p>Find something special for someone special</p>
-</header><main><button onclick="history.back()">← Back</button>
 
-<section
-    class="product-details"
-    id="productDetails"
-></section>
+    <p>
+        Find something special for someone special
+    </p>
 
-</main><nav>
-    <a href="index.html">🏠 Home</a>
-    <a href="index.html#searchInput">🔍 Search</a>
-    <a href="wishlist.html">❤️ Wishlist</a>
-    <a href="cart.html">🛒 Cart</a>
-    <a href="orders.html">📦 My Orders</a>
-</nav><script src="products.js"></script><script>
+</header>
+
+
+<main>
+
+    <button onclick="history.back()">
+        ← Back
+    </button>
+
+
+    <section
+        class="product-details"
+        id="productDetails"
+    >
+
+        <p>
+            Loading gift... ⏳
+        </p>
+
+    </section>
+
+</main>
+
+
+<nav>
+
+    <a href="index.html">
+        🏠 Home
+    </a>
+
+    <a href="index.html#searchInput">
+        🔍 Search
+    </a>
+
+    <a href="wishlist.html">
+        ❤️ Wishlist
+    </a>
+
+    <a href="cart.html">
+        🛒 Cart
+    </a>
+
+    <a href="orders.html">
+        📦 My Orders
+    </a>
+
+</nav>
+
+
+<!-- SUPABASE -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="supabase.js"></script>
+
+<script src="products.js"></script>
+
+
+<script>
+
+
+// ==========================================
+// GET PRODUCT ID
+// ==========================================
 
 const productId =
-    new URLSearchParams(window.location.search)
-    .get("id");
-
-
-const sellerProducts =
-    JSON.parse(
-        localStorage.getItem("sellerProducts")
-    ) || [];
-
-
-const allProducts = [
-    ...products,
-    ...sellerProducts
-];
-
-
-const product =
-    allProducts.find(
-        (item) =>
-            item.id == productId
-    );
+    new URLSearchParams(
+        window.location.search
+    ).get("id");
 
 
 const productDetails =
-    document.getElementById("productDetails");
-
-
-if (!product) {
-
-    productDetails.innerHTML = `
-
-        <h2>Gift not found 😔</h2>
-
-        <p>
-            This gift could not be found.
-        </p>
-
-        <a href="index.html">
-            <button>🏠 Back to Gifts</button>
-        </a>
-
-    `;
-
-} else {
-
-    productDetails.innerHTML = `
-
-        <div class="product-image">
-            ${product.emoji}
-        </div>
-
-        <h2>${product.name}</h2>
-
-        <h3>₹${product.price}</h3>
-
-        <p>
-            ${product.description}
-        </p>
-
-        <p>
-            <strong>Category:</strong>
-            ${product.category}
-        </p>
-
-        <button onclick="addToCart()">
-            🛒 Add to Cart
-        </button>
-
-        <button onclick="addToWishlist()">
-            ❤️ Add to Wishlist
-        </button>
-
-    `;
-}
-
-
-// ADD TO CART
-function addToCart() {
-
-    let cart =
-        JSON.parse(
-            localStorage.getItem("cart")
-        ) || [];
-
-
-    cart.push(product);
-
-
-    localStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
+    document.getElementById(
+        "productDetails"
     );
 
 
-    alert(
-        product.name +
-        " added to cart! 🛒"
-    );
-}
+// ==========================================
+// LOAD PRODUCT
+// ==========================================
+
+async function loadProduct() {
+
+    // --------------------------------------
+    // DEFAULT GIFT
+    // --------------------------------------
+
+    if (
+        productId &&
+        productId.startsWith("default-")
+    ) {
+
+        const defaultId =
+            productId.replace(
+                "default-",
+                ""
+            );
 
 
-// ADD TO WISHLIST
-function addToWishlist() {
-
-    let wishlist =
-        JSON.parse(
-            localStorage.getItem("wishlist")
-        ) || [];
-
-
-    const exists =
-        wishlist.some(
-            (item) =>
-                item.name === product.name
-        );
+        const product =
+            products.find(
+                item =>
+                    String(item.id) ===
+                    String(defaultId)
+            );
 
 
-    if (exists) {
+        if (product) {
 
-        alert(
-            product.name +
-            " is already in your wishlist ❤️"
-        );
+            displayProduct(product);
+
+        } else {
+
+            showNotFound();
+        }
+
 
         return;
     }
 
 
-    wishlist.push(product);
+    // --------------------------------------
+    // SELLER PRODUCT
+    // --------------------------------------
+
+    if (
+        productId &&
+        productId.startsWith("seller-")
+    ) {
+
+        const sellerId =
+            productId.replace(
+                "seller-",
+                ""
+            );
 
 
-    localStorage.setItem(
-        "wishlist",
-        JSON.stringify(wishlist)
-    );
+        const {
+            data: product,
+            error
+        } =
+            await supabaseClient
+                .from("products")
+                .select("*")
+                .eq(
+                    "id",
+                    sellerId
+                )
+                .maybeSingle();
 
 
-    alert(
-        product.name +
-        " added to wishlist! ❤️"
-    );
+        if (error) {
+
+            console.error(error);
+
+            productDetails.innerHTML = `
+
+                <h2>
+                    Could not load gift 😔
+                </h2>
+
+                <p>
+                    ${error.message}
+                </p>
+
+            `;
+
+            return;
+        }
+
+
+        if (!product) {
+
+            showNotFound();
+
+            return;
+        }
+
+
+        displayProduct(product);
+
+        return;
+    }
+
+
+    showNotFound();
 }
 
-</script></body>
-</html>
+
+// ==========================================
+// DISPLAY PRODUCT
+// ==========================================
+
+function displayProduct(product) {
+
+    const imageUrl =
+        product.image_url ||
+        product.image ||
+        "";
+
+
+    const imageHTML =
+        imageUrl
+
+        ?
+
+        `
+        <img
+            src="${imageUrl}"
+            alt="${product.name}"
+            class="product-image"
+            style="
+                width:100%;
+                max-height:350px;
+                object-fit:cover;
+                border-radius:12px;
+            "
+        >
+        `
+
+        :
+
+        `
+        <div
+            style="
+                font-size:80px;
+                text-align:center;
+                padding:30px;
+            "
+        >
+            ${product.emoji || "🎁"}
+        </div>
+        `;
+
+
+    productDetails.innerHTML = `
+
+        ${imageHTML}
+
+
+        <h2>
+            ${product.emoji || "🎁"}
+            ${product.name}
+        </h2>
+
+
+        <h3>
+            ₹${product.price}
+        </h3>
+
+
+        <p>
+            ${product.description || ""}
+        </p>
+
+
+        <p>
+            <strong>
+                Category:
+            </strong>
+
+            ${product.category || "Gift"}
+        </p>
+
+
+        <hr>
+
+
+        <!-- SELLER INFORMATION -->
+
+        <h3>
+            🏪 Seller Information
+        </h3>
+
+
+        <p>
+
+            <strong>
+                Business:
+            </strong>
+
+            ${
+                product.business_name ||
+                "Giftify Seller"
+            }
+
+        </p>
+
+
+        <p>
+
+            📍
+            <strong>
+                Location:
+            </strong>
+
+            ${
+                product.seller_location ||
+                "Location not provided"
+            }
+
+        </p>
+
+
+        ${
+            product.seller_id
+
+            ?
+
+            `
+            <
