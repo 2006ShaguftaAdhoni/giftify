@@ -138,19 +138,33 @@ function addToWishlist(uniqueId) {
 }
 
 // Search
+
 function searchProducts() {
+
     const searchText =
-        document.getElementById("searchInput").value.toLowerCase().trim();
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
 
     const filteredProducts = allProducts.filter((product) =>
+
         product.name.toLowerCase().includes(searchText) ||
+
         product.category.toLowerCase().includes(searchText) ||
-        (product.description || "").toLowerCase().includes(searchText)
+
+        (product.description || "")
+            .toLowerCase()
+            .includes(searchText) ||
+
+        (product.seller_location || "")
+            .toLowerCase()
+            .includes(searchText)
+
     );
 
     displayProducts(filteredProducts);
 }
-
 // Category filter
 function filterCategory(category) {
     if (category === "All") {
