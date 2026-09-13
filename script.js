@@ -30,26 +30,16 @@ async function loadProducts() {
     // Default Giftify products
     const defaultProducts =
         products.map((product) => ({
-
             ...product,
-
-            uniqueId:
-                "default-" +
-                product.id
-
+            uniqueId: "default-" + product.id
         }));
 
 
     // Seller uploaded products
     const uploadedProducts =
         (sellerProducts || []).map((product) => ({
-
             ...product,
-
-            uniqueId:
-                "seller-" +
-                product.id
-
+            uniqueId: "seller-" + product.id
         }));
 
 
@@ -60,8 +50,7 @@ async function loadProducts() {
             error
         );
 
-        allProducts =
-            defaultProducts;
+        allProducts = defaultProducts;
 
     } else {
 
@@ -72,9 +61,7 @@ async function loadProducts() {
     }
 
 
-    displayProducts(
-        allProducts
-    );
+    displayProducts(allProducts);
 }
 
 
@@ -84,9 +71,7 @@ async function loadProducts() {
 
 function displayProducts(productList) {
 
-    if (!productContainer)
-        return;
-
+    if (!productContainer) return;
 
     productContainer.innerHTML = "";
 
@@ -94,7 +79,7 @@ function displayProducts(productList) {
     if (productList.length === 0) {
 
         productContainer.innerHTML =
-            "<p>No gifts found 😔</p>";
+            "<p>No gifts found in this location 😔</p>";
 
         return;
     }
@@ -134,31 +119,23 @@ function displayProducts(productList) {
 
 
                 <p class="price">
-
                     ₹${product.price}
-
                 </p>
 
 
                 <p>
-
                     ${product.description || ""}
-
                 </p>
 
 
                 <p>
-
                     <strong>
                         Category:
                     </strong>
 
                     ${product.category}
-
                 </p>
 
-
-                <!-- BUSINESS NAME -->
 
                 <p>
 
@@ -174,8 +151,6 @@ function displayProducts(productList) {
 
                 </p>
 
-
-                <!-- SELLER LOCATION -->
 
                 <p>
 
@@ -193,24 +168,16 @@ function displayProducts(productList) {
 
 
                 <button
-                    onclick="
-                        addToCart('${product.uniqueId}')
-                    "
+                    onclick="addToCart('${product.uniqueId}')"
                 >
-
                     🛒 Add to Cart
-
                 </button>
 
 
                 <button
-                    onclick="
-                        addToWishlist('${product.uniqueId}')
-                    "
+                    onclick="addToWishlist('${product.uniqueId}')"
                 >
-
                     ❤️ Wishlist
-
                 </button>
 
             </article>
@@ -245,9 +212,7 @@ function addToCart(uniqueId) {
 
     if (!product) {
 
-        alert(
-            "Product not found!"
-        );
+        alert("Product not found!");
 
         return;
     }
@@ -281,9 +246,7 @@ function addToWishlist(uniqueId) {
 
     if (!product) {
 
-        alert(
-            "Product not found!"
-        );
+        alert("Product not found!");
 
         return;
     }
@@ -292,16 +255,13 @@ function addToWishlist(uniqueId) {
     const alreadyExists =
         wishlist.some(
             (item) =>
-                item.uniqueId ===
-                uniqueId
+                item.uniqueId === uniqueId
         );
 
 
     if (!alreadyExists) {
 
-        wishlist.push(
-            product
-        );
+        wishlist.push(product);
 
 
         localStorage.setItem(
@@ -345,79 +305,20 @@ function searchProducts() {
 
 
     const filteredProducts =
-        allProducts.filter(
-            (product) =>
+        allProducts.filter((product) =>
 
-                product.name
-                    .toLowerCase()
-                    .includes(searchText)
+            product.name
+                .toLowerCase()
+                .includes(searchText)
 
-                ||
+            ||
 
-                product.category
-                    .toLowerCase()
-                    .includes(searchText)
+            product.category
+                .toLowerCase()
+                .includes(searchText)
 
-                ||
+            ||
 
-                (product.description || "")
-                    .toLowerCase()
-                    .includes(searchText)
-
-                ||
-
-                (product.seller_location || "")
-                    .toLowerCase()
-                    .includes(searchText)
-
-                ||
-
-                (product.business_name || "")
-                    .toLowerCase()
-                    .includes(searchText)
-        );
-
-
-    displayProducts(
-        filteredProducts
-    );
-}
-
-
-// ==========================================
-// CATEGORY FILTER
-// ==========================================
-
-function filterCategory(category) {
-
-    if (category === "All") {
-
-        displayProducts(
-            allProducts
-        );
-
-        return;
-    }
-
-
-    const filteredProducts =
-        allProducts.filter(
-            (product) =>
-
-                product.category
-                    .toLowerCase() ===
-                category.toLowerCase()
-        );
-
-
-    displayProducts(
-        filteredProducts
-    );
-}
-
-
-// ==========================================
-// START
-// ==========================================
-
-loadProducts();
+            (product.description || "")
+                .toLowerCase()
+                .includes(searchText)
