@@ -1,56 +1,72 @@
 
+       
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giftify - Cart 🛒</title>
+    <title>Cart - Giftify 🎁</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-    <h1>Giftify 🎁</h1>
-    <p>Your shopping cart 🛒</p>
+    <h1>🛒 Your Cart</h1>
+    <p>Review your gifts before ordering</p>
 </header>
 
 <main>
-    <h2>My Cart 🛒</h2>
 
-    <div id="cartDisplay"></div>
-    <div id="cartTotal"></div>
+    <div id="cartDisplay">
+        <p>Loading cart...</p>
+    </div>
 
-    <button onclick="checkout()">
-        🛍️ Proceed to Checkout
-    </button>
+    <div id="checkoutSection" style="display:none;">
 
-    <div id="checkoutForm" style="display: none;">
-        <h2>Delivery Details</h2>
+        <hr>
 
-        <input id="customerName" placeholder="Your name">
-
-        <br><br>
+        <h2>📦 Delivery Details</h2>
 
         <input
-            id="customerPhone"
-            placeholder="Phone number"
-            type="tel"
+            type="text"
+            id="customerName"
+            placeholder="👤 Full Name"
         >
 
-        <br><br>
+        <input
+            type="tel"
+            id="customerPhone"
+            placeholder="📱 Phone Number"
+        >
 
         <textarea
             id="customerAddress"
-            placeholder="Delivery address"
+            placeholder="📍 Full Delivery Address"
+            rows="4"
         ></textarea>
+
+        <h2>💳 Payment Method</h2>
+
+        <label>
+            <input
+                type="radio"
+                name="paymentMethod"
+                value="Cash on Delivery"
+                checked
+            >
+            💵 Cash on Delivery
+        </label>
 
         <br><br>
 
         <button onclick="placeOrder()">
-            Place Order 🎉
+            ✅ Place Order
         </button>
+
     </div>
+
 </main>
 
 <nav>
@@ -61,27 +77,23 @@
     <a href="orders.html">📦 My Orders</a>
 </nav>
 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 
 <script>
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let cart =
+    JSON.parse(localStorage.getItem("cart")) || [];
 
 const cartDisplay =
     document.getElementById("cartDisplay");
 
-const cartTotal =
-    document.getElementById("cartTotal");
-
-const defaultImage =
-    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
+const checkoutSection =
+    document.getElementById("checkoutSection");
 
 
-// ===============================
 // DISPLAY CART
-// ===============================
-
 function displayCart() {
 
     cartDisplay.innerHTML = "";
@@ -89,41 +101,40 @@ function displayCart() {
     if (cart.length === 0) {
 
         cartDisplay.innerHTML = `
-            <h3>Your cart is empty 🛒</h3>
-            <p>
-                Go back to Giftify and choose a gift! 🎁
-            </p>
+            <h2>🛒 Your cart is empty</h2>
+
+            <p>Add some gifts to your cart first.</p>
+
+            <a href="index.html">
+                <button>🎁 Browse Gifts</button>
+            </a>
         `;
 
-        cartTotal.innerHTML = "";
+        checkoutSection.style.display = "none";
 
         return;
     }
 
-
     let total = 0;
-
 
     cart.forEach((product, index) => {
 
         const price =
-            Number(product.price) || 0;
+            Number(product.price || 0);
 
         total += price;
 
-
-        const imageUrl =
+        const image =
             product.image_url ||
             product.image ||
-            defaultImage;
-
+            "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
 
         cartDisplay.innerHTML += `
 
-            <article class="product-card">
+            <article>
 
                 <img
-                    src="${imageUrl}"
+                    src="${image}"
                     alt="${product.name}"
                     class="product-image"
                 >
@@ -142,15 +153,17 @@ function displayCart() {
                 </p>
 
                 <p>
-                    <strong>Category:</strong>
-                    ${product.category || "Gift"}
+                    🏪
+                    ${product.business_name || "Giftify Seller"}
                 </p>
 
-                <button
-                    onclick="removeFromCart(${index})">
+                <p>
+                    📍
+                    ${product.seller_location || "Location not provided"}
+                </p>
 
-                    🗑️ Remove
-
+                <button onclick="removeFromCart(${index})">
+                    ❌ Remove
                 </button>
 
             </article>
@@ -159,15 +172,25 @@ function displayCart() {
     });
 
 
-    cartTotal.innerHTML =
-        `<h2>Total: ₹${total}</h2>`;
+    cartDisplay.innerHTML += `
+
+        <hr>
+
+        <h2>
+            💰 Total: ₹${total}
+        </h2>
+
+        <button onclick="showCheckout()">
+            🛍️ Proceed to Checkout
+        </button>
+
+    `;
+
+    checkoutSection.style.display = "none";
 }
 
 
-// ===============================
 // REMOVE PRODUCT
-// ===============================
-
 function removeFromCart(index) {
 
     cart.splice(index, 1);
@@ -181,19 +204,184 @@ function removeFromCart(index) {
 }
 
 
-// ===============================
 // SHOW CHECKOUT
-// ===============================
-
-function checkout() {
+function showCheckout() {
 
     if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
 
-        alert("Your cart is empty 🛒");
+    checkoutSection.style.display = "block";
+
+    checkoutSection.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+// PLACE ORDER
+async function placeOrder() {
+
+    const name =
+        document.getElementById("customerName")
+            .value.trim();
+
+    const phone =
+        document.getElementById("customerPhone")
+            .value.trim();
+
+    const address =
+        document.getElementById("customerAddress")
+            .value.trim();
+
+
+    if (!name || !phone || !address) {
+
+        alert(
+            "Please enter your name, phone number and delivery address."
+        );
 
         return;
     }
 
 
-    document.getElementById(
-       
+    if (cart.length === 0) {
+
+        alert("Your cart is empty!");
+
+        return;
+    }
+
+
+    const total =
+        cart.reduce(
+            (sum, product) =>
+                sum + Number(product.price || 0),
+            0
+        );
+
+
+    // GET LOGGED-IN CUSTOMER
+    const {
+        data: { user },
+        error: userError
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if (userError || !user) {
+
+        alert(
+            "Please login before placing an order."
+        );
+
+        return;
+    }
+
+
+    // CREATE ORDER
+    const {
+        data: savedOrder,
+        error: orderError
+    } =
+        await supabaseClient
+            .from("orders")
+            .insert({
+
+                customer_id: user.id,
+
+                customer_name: name,
+
+                phone: phone,
+
+                address: address,
+
+                total: total,
+
+                status: "Pending"
+
+            })
+            .select()
+            .single();
+
+
+    if (orderError) {
+
+        console.error(orderError);
+
+        alert(
+            "Could not place order:\n" +
+            orderError.message
+        );
+
+        return;
+    }
+
+
+    // CREATE ORDER ITEMS
+    const orderItems =
+        cart.map(product => ({
+
+            order_id:
+                savedOrder.id,
+
+            product_id:
+                product.seller_id
+                    ? Number(product.id)
+                    : null,
+
+            seller_id:
+                product.seller_id || null,
+
+            product_name:
+                product.name,
+
+            price:
+                Number(product.price || 0),
+
+            quantity: 1
+
+        }));
+
+
+    const {
+        error: itemsError
+    } =
+        await supabaseClient
+            .from("order_items")
+            .insert(orderItems);
+
+
+    if (itemsError) {
+
+        console.error(itemsError);
+
+        alert(
+            "Order was created, but some order details could not be saved:\n" +
+            itemsError.message
+        );
+
+        return;
+    }
+
+
+    // SAVE LOCAL BACKUP
+    const lastOrder = {
+
+        id: savedOrder.id,
+
+        customerName: name,
+
+        customerPhone: phone,
+
+        customerAddress: address,
+
+        total: total,
+
+        paymentMethod:
+            "Cash on Delivery",
+
+        products: cart,
+
+        status: "
