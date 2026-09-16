@@ -344,4 +344,250 @@ function displayProduct(product) {
             ?
 
             `
-            <
+            <button
+                onclick="
+                    viewSellerProfile(
+                        '${product.seller_id}'
+                    )
+                "
+            >
+                🏪 View Seller
+            </button>
+            `
+
+            :
+
+            ""
+        }
+
+
+        <br><br>
+
+
+        <button
+            onclick="addToCart()"
+        >
+            🛒 Add to Cart
+        </button>
+
+
+        <button
+            onclick="addToWishlist()"
+        >
+            ❤️ Add to Wishlist
+        </button>
+
+    `;
+
+
+    // Save current product
+    window.currentProduct =
+        product;
+}
+
+
+// ==========================================
+// VIEW SELLER PROFILE
+// ==========================================
+
+function viewSellerProfile(
+    sellerId
+) {
+
+    window.location.href =
+        "seller-profile.html?id=" +
+        encodeURIComponent(
+            sellerId
+        );
+}
+
+
+// ==========================================
+// NOT FOUND
+// ==========================================
+
+function showNotFound() {
+
+    productDetails.innerHTML = `
+
+        <h2>
+            Gift not found 😔
+        </h2>
+
+        <p>
+            This gift could not be found.
+        </p>
+
+
+        <a href="index.html">
+
+            <button>
+                🏠 Back to Gifts
+            </button>
+
+        </a>
+
+    `;
+}
+
+
+// ==========================================
+// ADD TO CART
+// ==========================================
+
+function addToCart() {
+
+    const product =
+        window.currentProduct;
+
+
+    if (!product) {
+
+        alert(
+            "Product not found!"
+        );
+
+        return;
+    }
+
+
+    let cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+
+    // Give the product the same unique ID
+    // used by the homepage
+
+    const cartProduct = {
+
+        ...product,
+
+        uniqueId:
+            product.seller_id
+
+            ?
+
+            "seller-" +
+            product.id
+
+            :
+
+            "default-" +
+            product.id
+    };
+
+
+    cart.push(
+        cartProduct
+    );
+
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+
+    alert(
+        product.name +
+        " added to cart! 🛒"
+    );
+}
+
+
+// ==========================================
+// ADD TO WISHLIST
+// ==========================================
+
+function addToWishlist() {
+
+    const product =
+        window.currentProduct;
+
+
+    if (!product) {
+
+        alert(
+            "Product not found!"
+        );
+
+        return;
+    }
+
+
+    let wishlist =
+        JSON.parse(
+            localStorage.getItem("wishlist")
+        ) || [];
+
+
+    const uniqueId =
+        product.seller_id
+
+        ?
+
+        "seller-" +
+        product.id
+
+        :
+
+        "default-" +
+        product.id;
+
+
+    const exists =
+        wishlist.some(
+            item =>
+                item.uniqueId ===
+                uniqueId
+        );
+
+
+    if (exists) {
+
+        alert(
+            product.name +
+            " is already in your wishlist ❤️"
+        );
+
+        return;
+    }
+
+
+    wishlist.push({
+
+        ...product,
+
+        uniqueId:
+            uniqueId
+
+    });
+
+
+    localStorage.setItem(
+        "wishlist",
+        JSON.stringify(wishlist)
+    );
+
+
+    alert(
+        product.name +
+        " added to wishlist! ❤️"
+    );
+}
+
+
+// ==========================================
+// START
+// ==========================================
+
+loadProduct();
+
+</script>
+
+
+</body>
+
+</html>
