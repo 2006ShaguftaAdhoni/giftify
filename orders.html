@@ -6,356 +6,478 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Giftify - My Orders</title>
+    <title>My Orders - Giftify 🎁</title>
 
     <link rel="stylesheet" href="style.css">
+
+    <style>
+        .order-card {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-status {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .tracking {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .tracking-step {
+            text-align: center;
+            flex: 1;
+            font-size: 12px;
+        }
+
+        .tracking-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ddd;
+        }
+
+        .tracking-step.active .tracking-circle {
+            background: #8e44ad;
+            color: white;
+        }
+
+        .tracking-step.active {
+            font-weight: bold;
+        }
+
+        .order-product {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+
 </head>
 
 <body>
 
 <header>
-    <h1>Giftify 🎁</h1>
-    <p>My Orders 📦</p>
+
+    <h1>📦 My Orders</h1>
+
+    <p>Track your Giftify orders</p>
+
 </header>
+
 
 <main>
 
-    <h2>My Orders 📦</h2>
+    <div id="ordersContainer">
 
-    <div id="ordersDisplay">
         <p>Loading your orders... ⏳</p>
+
     </div>
 
 </main>
 
 
 <nav>
+
     <a href="index.html">🏠 Home</a>
+
     <a href="index.html#searchInput">🔍 Search</a>
+
     <a href="wishlist.html">❤️ Wishlist</a>
+
     <a href="cart.html">🛒 Cart</a>
+
     <a href="orders.html">📦 My Orders</a>
+
 </nav>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="supabase.js"></script>
+
 
 <script>
 
-const ordersDisplay =
-    document.getElementById("ordersDisplay");
-
-const defaultImage =
-    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
+const ordersContainer =
+    document.getElementById("ordersContainer");
 
 
-// -----------------------------
-// GET STATUS MESSAGE
-// -----------------------------
+const statusSteps = [
 
-function getStatusMessage(status) {
+    {
+        name: "Pending",
+        emoji: "🛒"
+    },
 
-    switch (status) {
+    {
+        name: "Confirmed",
+        emoji: "✅"
+    },
 
-        case "Pending":
-            return "⏳ Waiting for seller confirmation";
+    {
+        name: "Preparing",
+        emoji: "📦"
+    },
 
-        case "Confirmed":
-            return "✅ Order confirmed by seller";
+    {
+        name: "Out for Delivery",
+        emoji: "🚚"
+    },
 
-        case "Preparing":
-            return "🎁 Your gift is being prepared";
-
-        case "Out for Delivery":
-            return "🚚 Your gift is on the way";
-
-        case "Delivered":
-            return "🎉 Order delivered successfully";
-
-        default:
-            return "⏳ Order received";
+    {
+        name: "Delivered",
+        emoji: "🎉"
     }
-}
 
+];
 
-// -----------------------------
-// LOAD ORDERS
-// -----------------------------
 
 async function loadOrders() {
 
-    // Check login
-    const { data: userData, error: userError } =
+    const {
+        data: { user },
+        error: userError
+    } =
         await supabaseClient.auth.getUser();
 
 
-    if (userError || !userData.user) {
+    if (userError || !user) {
 
-        ordersDisplay.innerHTML = `
-            <h3>Please login to see your orders 🔐</h3>
+        ordersContainer.innerHTML = `
 
-            <a href="seller-login.html">
-                <button>Login</button>
-            </a>
+            <div class="order-card">
+
+                <h2>🔐 Login Required</h2>
+
+                <p>
+                    Please login to see your orders.
+                </p>
+
+                <button onclick="goBack()">
+                    🏠 Go Home
+                </button>
+
+            </div>
+
         `;
 
         return;
     }
 
 
-    const user = userData.user;
-
-
-    // Get customer's orders
-    const { data: orders, error: ordersError } =
+    const {
+        data: orders,
+        error
+    } =
         await supabaseClient
+
             .from("orders")
+
             .select("*")
+
             .eq("customer_id", user.id)
-            .order("created_at", { ascending: false });
+
+            .order("created_at", {
+                ascending: false
+            });
 
 
-    if (ordersError) {
+    if (error) {
 
-        console.error(ordersError);
+        console.error(error);
 
-        ordersDisplay.innerHTML = `
-            <p>Could not load orders.</p>
-            <p>${ordersError.message}</p>
+        ordersContainer.innerHTML = `
+
+            <div class="order-card">
+
+                <h2>❌ Could not load orders</h2>
+
+                <p>
+                    ${error.message}
+                </p>
+
+            </div>
+
         `;
 
         return;
     }
 
 
-    // No orders
     if (!orders || orders.length === 0) {
 
-        ordersDisplay.innerHTML = `
-            <h3>No orders yet 📦</h3>
+        ordersContainer.innerHTML = `
 
-            <p>
-                Your placed orders will appear here.
-            </p>
+            <div class="order-card">
 
-            <a href="index.html">
-                <button>🎁 Browse Gifts</button>
-            </a>
+                <h2>📦 No Orders Yet</h2>
+
+                <p>
+                    Your orders will appear here.
+                </p>
+
+                <a href="index.html">
+
+                    <button>
+                        🎁 Browse Gifts
+                    </button>
+
+                </a>
+
+            </div>
+
         `;
 
         return;
     }
 
 
-    let allOrdersHTML = "";
+    ordersContainer.innerHTML = "";
 
-
-    // -----------------------------
-    // DISPLAY EVERY ORDER
-    // -----------------------------
 
     for (const order of orders) {
 
+        await displayOrder(order);
 
-        // Get order items
-        const { data: items, error: itemsError } =
-            await supabaseClient
-                .from("order_items")
-                .select("*")
-                .eq("order_id", order.id);
+    }
+
+}
 
 
-        if (itemsError) {
+async function displayOrder(order) {
 
-            console.error(itemsError);
+    const {
+        data: items,
+        error
+    } =
+        await supabaseClient
 
-            continue;
-        }
+            .from("order_items")
 
+            .select("*")
 
-        let productsHTML = "";
-
-
-        // -----------------------------
-        // DISPLAY PRODUCTS
-        // -----------------------------
-
-        for (const item of (items || [])) {
-
-            let imageUrl = defaultImage;
-
-            let description = "";
-
-            let category = "Gift";
+            .eq("order_id", order.id);
 
 
-            // Get product information
-            if (item.product_id) {
+    if (error) {
 
-                const { data: product } =
-                    await supabaseClient
-                        .from("products")
-                        .select(
-                            "image_url, description, category"
-                        )
-                        .eq("id", item.product_id)
-                        .maybeSingle();
+        console.error(error);
+
+        return;
+
+    }
 
 
-                if (product) {
-
-                    imageUrl =
-                        product.image_url ||
-                        defaultImage;
-
-                    description =
-                        product.description || "";
-
-                    category =
-                        product.category || "Gift";
-                }
-            }
+    const currentStatus =
+        order.status || "Pending";
 
 
-            productsHTML += `
+    let currentIndex =
+        statusSteps.findIndex(
+            step =>
+                step.name === currentStatus
+        );
 
-                <article class="product-card">
 
-                    <img
-                        src="${imageUrl}"
-                        alt="${item.product_name}"
-                        class="product-image"
-                    >
+    if (currentIndex === -1) {
 
-                    <h3>
-                        🎁 ${item.product_name}
-                    </h3>
+        currentIndex = 0;
 
-                    <p>
-                        <strong>Price:</strong>
-                        ₹${item.price}
-                    </p>
+    }
 
-                    <p>
-                        ${description}
-                    </p>
 
-                    <p>
-                        <strong>Category:</strong>
-                        ${category}
-                    </p>
+    let trackingHTML = `
 
-                    <p>
-                        <strong>Quantity:</strong>
-                        ${item.quantity || 1}
-                    </p>
+        <div class="tracking">
 
-                </article>
+    `;
+
+
+    statusSteps.forEach(
+        (step, index) => {
+
+            const active =
+                index <= currentIndex
+                    ? "active"
+                    : "";
+
+            trackingHTML += `
+
+                <div class="tracking-step ${active}">
+
+                    <div class="tracking-circle">
+
+                        ${step.emoji}
+
+                    </div>
+
+                    <div>
+
+                        ${step.name}
+
+                    </div>
+
+                </div>
+
             `;
+
         }
+    );
 
 
-        // Order date
-        const orderDate =
-            new Date(order.created_at).toLocaleString();
+    trackingHTML += `
+
+        </div>
+
+    `;
 
 
-        // Current status
-        const currentStatus =
-            order.status || "Pending";
+    let itemsHTML = "";
 
 
-        const statusMessage =
-            getStatusMessage(currentStatus);
+    if (items && items.length > 0) {
+
+        items.forEach(item => {
+
+            const quantity =
+                item.quantity || 1;
+
+            const price =
+                Number(item.price || 0);
 
 
-        // -----------------------------
-        // ORDER CARD
-        // -----------------------------
+            itemsHTML += `
 
-        allOrdersHTML += `
+                <div class="order-product">
 
-            <article>
-
-                <h3>
-                    📦 Order #${order.id}
-                </h3>
-
-
-                <div style="
-                    padding:15px;
-                    margin:15px 0;
-                    border-radius:10px;
-                    background:#f5f0ff;
-                ">
-
-                    <h3>
-                        📍 Order Status
-                    </h3>
-
-                    <h2>
-                        ${currentStatus}
-                    </h2>
+                    <strong>
+                        🎁 ${item.product_name}
+                    </strong>
 
                     <p>
-                        ${statusMessage}
+                        ₹${price}
+                        ×
+                        ${quantity}
                     </p>
 
                 </div>
 
+            `;
 
-                <p>
-                    <strong>Name:</strong>
-                    ${order.customer_name}
-                </p>
+        });
 
-
-                <p>
-                    <strong>Phone:</strong>
-                    ${order.phone}
-                </p>
-
-
-                <p>
-                    <strong>Delivery Address:</strong>
-                    ${order.address}
-                </p>
-
-
-                <p>
-                    <strong>Order Date:</strong>
-                    ${orderDate}
-                </p>
-
-
-                <h3>
-                    🎁 Products Ordered
-                </h3>
-
-
-                ${productsHTML}
-
-
-                <h2>
-                    💰 Total: ₹${order.total}
-                </h2>
-
-            </article>
-
-            <hr>
-        `;
     }
 
 
-    ordersDisplay.innerHTML = allOrdersHTML;
+    const orderDate =
+        order.created_at
+            ? new Date(order.created_at)
+                .toLocaleString()
+            : "Date unavailable";
+
+
+    ordersContainer.innerHTML += `
+
+        <div class="order-card">
+
+            <h2>
+                📦 Order #${order.id}
+            </h2>
+
+            <p>
+                <strong>Order Date:</strong>
+                ${orderDate}
+            </p>
+
+            <div class="order-status">
+
+                Current Status:
+                ${getStatusEmoji(currentStatus)}
+                ${currentStatus}
+
+            </div>
+
+            ${trackingHTML}
+
+
+            <hr>
+
+
+            <h3>
+                🎁 Ordered Gifts
+            </h3>
+
+            ${itemsHTML}
+
+
+            <hr>
+
+
+            <h3>
+                💰 Total: ₹${order.total}
+            </h3>
+
+            <p>
+                💵 Payment:
+                Cash on Delivery
+            </p>
+
+            <p>
+                📍 Delivery Address:
+                ${order.address}
+            </p>
+
+            <p>
+                📱 Phone:
+                ${order.phone}
+            </p>
+
+        </div>
+
+    `;
+
 }
 
 
-// Start
+function getStatusEmoji(status) {
+
+    const step =
+        statusSteps.find(
+            item =>
+                item.name === status
+        );
+
+    return step
+        ? step.emoji
+        : "📦";
+
+}
+
+
+function goBack() {
+
+    window.location.href =
+        "index.html";
+
+}
+
+
 loadOrders();
 
 </script>
 
 </body>
+
 </html>
