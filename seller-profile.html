@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Seller Profile - Giftify 🏪</title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>🏪 Giftify Seller</h1>
+
+    <p>
+        Seller Profile
+    </p>
+
+</header>
+
+
+<main>
+
+    <button onclick="history.back()">
+        ← Back
+    </button>
+
+
+    <!-- SELLER INFORMATION -->
+
+    <section
+        class="product-details"
+        id="sellerInfo"
+    >
+
+        <p>
+            Loading seller... ⏳
+        </p>
+
+    </section>
+
+
+    <!-- SELLER PRODUCTS -->
+
+    <h2>
+        🎁 Gifts From This Seller
+    </h2>
+
+
+    <div id="sellerProducts">
+
+        <p>
+            Loading products... ⏳
+        </p>
+
+    </div>
+
+
+</main>
+
+
+<nav>
+
+    <a href="index.html">
+        🏠 Home
+    </a>
+
+    <a href="index.html#searchInput">
+        🔍 Search
+    </a>
+
+    <a href="wishlist.html">
+        ❤️ Wishlist
+    </a>
+
+    <a href="cart.html">
+        🛒 Cart
+    </a>
+
+    <a href="orders.html">
+        📦 My Orders
+    </a>
+
+</nav>
+
+
+<!-- SUPABASE -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+<script src="supabase.js"></script>
+
+
+<script>
+
+
+// ==========================================
+// GET SELLER ID
+// ==========================================
+
+const sellerId =
+    new URLSearchParams(
+        window.location.search
+    ).get("id");
+
+
+const sellerInfo =
+    document.getElementById(
+        "sellerInfo"
+    );
+
+
+const sellerProducts =
+    document.getElementById(
+        "sellerProducts"
+    );
+
+
+const defaultImage =
+    "https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&w=600&q=80";
+
+
+// ==========================================
+// LOAD SELLER
+// ==========================================
+
+async function loadSeller() {
+
+    if (!sellerId) {
+
+        sellerInfo.innerHTML = `
+
+            <h2>
+                Seller not found 😔
+            </h2>
+
+        `;
+
+        return;
+    }
+
+
+    // Get seller products
+    const {
+        data: products,
+        error
+    } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .eq(
+                "seller_id",
+                sellerId
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(error);
+
+        sellerInfo.innerHTML = `
+
+            <h2>
+                Could not load seller 😔
+            </h2>
+
+            <p>
+                ${error.message}
+            </p>
+
+        `;
+
+        sellerProducts.innerHTML = "";
+
+        return;
+    }
+
+
+    if (
+        !products ||
+        products.length === 0
+    ) {
+
+        sellerInfo.innerHTML = `
+
+            <h2>
+                Seller not found 😔
+            </h2>
+
+            <p>
+                This seller has no products yet.
+            </p>
+
+        `;
+
+        sellerProducts.innerHTML = "";
+
+        return;
+    }
+
+
+    // ======================================
+    // SELLER INFORMATION
+    // ======================================
+
+    const firstProduct =
+        products[0];
+
+
+    const businessName =
+        firstProduct.business_name ||
+        "Giftify Seller";
+
+
+    const location =
+        firstProduct.seller_location ||
+        "Location not provided";
+
+
+    sellerInfo.innerHTML = `
+
+        <h2>
+            🏪 ${businessName}
+        </h2>
+
+
+        <p>
+            📍
+            <strong>
+                Location:
+            </strong>
+
+            ${location}
+        </p>
+
+
+        <p>
+            🎁
+            <strong>
+                Products:
+            </strong>
+
+            ${products.length}
+        </p>
+
+    `;
+
+
+    // Display products
+    displaySellerProducts(
+        products
+    );
+}
+
+
+// ==========================================
+// DISPLAY SELLER PRODUCTS
+// ==========================================
+
+function displaySellerProducts(
+    products
+) {
+
+    sellerProducts.innerHTML = "";
+
+
+    products.forEach(
+        product => {
+
+            const imageUrl =
+                product.image_url ||
+                defaultImage;
+
+
+            const uniqueId =
+                "seller-" +
+                product.id;
+
+
+            sellerProducts.innerHTML += `
+
+                <article>
+
+                    <img
+                        src="${imageUrl}"
+                        alt="${product.name}"
+                        class="product-image"
+                    >
+
+
+                    <h3>
+
+                        <a
+                            href="product.html?id=${uniqueId}"
+                        >
+
+                            🎁
+                            ${product.name}
+
+                        </a>
+
+                    </h3>
+
+
+                    <p class="price">
+
+                        ₹${product.price}
+
+                    </p>
+
+
+                    <p>
+
+                        ${
+                            product.description ||
+                            ""
+                        }
+
+                    </p>
+
+
+                    <p>
+
+                        <strong>
+                            Category:
+                        </strong>
+
+                        ${
+                            product.category ||
+                            "Gift"
+                        }
+
+                    </p>
+
+
+                    <p>
+
+                        📍
+                        ${
+                            product.seller_location ||
+                            "Location not provided"
+                        }
+
+                    </p>
+
+
+                    <button
+                        onclick="
+                            addToCart(
+                                '${uniqueId}'
+                            )
+                        "
+                    >
+
+                        🛒 Add to Cart
+
+                    </button>
+
+
+                    <button
+                        onclick="
+                            addToWishlist(
+                                '${uniqueId}'
+                            )
+                        "
+                    >
+
+                        ❤️ Wishlist
+
+                    </button>
+
+                </article>
+
+            `;
+        }
+    );
+}
+
+
+// ==========================================
+// ADD TO CART
+// ==========================================
+
+async function addToCart(
+    uniqueId
+) {
+
+    const productId =
+        uniqueId.replace(
+            "seller-",
+            ""
+        );
+
+
+    const {
+        data: product,
+        error
+    } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .eq(
+                "id",
+                productId
+            )
+            .maybeSingle();
+
+
+    if (
+        error ||
+        !product
+    ) {
+
+        alert(
+            "Product not found!"
+        );
+
+        return;
+    }
+
+
+    let cart =
+        JSON.parse(
+            localStorage.getItem("cart")
+        ) || [];
+
+
+    cart.push({
+
+        ...product,
+
+        uniqueId:
+            uniqueId
+
+    });
+
+
+    localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+
+    alert(
+        product.name +
+        " added to cart! 🛒"
+    );
+}
+
+
+// ==========================================
+// ADD TO WISHLIST
+// ==========================================
+
+async function addToWishlist(
+    uniqueId
+) {
+
+    const productId =
+        uniqueId.replace(
+            "seller-",
+            ""
+        );
+
+
+    const {
+        data: product,
+        error
+    } =
+        await supabaseClient
+            .from("products")
+            .select("*")
+            .eq(
+                "id",
+                productId
+            )
+            .maybeSingle();
+
+
+    if (
+        error ||
+        !product
+    ) {
+
+        alert(
+            "Product not found!"
+        );
+
+        return;
+    }
+
+
+    let wishlist =
+        JSON.parse(
+            localStorage.getItem("wishlist")
+        ) || [];
+
+
+    const exists =
+        wishlist.some(
+            item =>
+                item.uniqueId ===
+                uniqueId
+        );
+
+
+    if (exists) {
+
+        alert(
+            product.name +
+            " is already in your wishlist ❤️"
+        );
+
+        return;
+    }
+
+
+    wishlist.push({
+
+        ...product,
+
+        uniqueId:
+            uniqueId
+
+    });
+
+
+    localStorage.setItem(
+        "wishlist",
+        JSON.stringify(wishlist)
+    );
+
+
+    alert(
+        product.name +
+        " added to wishlist! ❤️"
+    );
+}
+
+
+// ==========================================
+// START
+// ==========================================
+
+loadSeller();
+
+</script>
+
+
+</body>
+
+</html>
